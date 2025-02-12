@@ -5,7 +5,7 @@ from passlib.hash import bcrypt
 from sqlalchemy.future import select
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from typing import Optional
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import humanize
@@ -28,6 +28,8 @@ from services.users import UsersService
 from services.statistics import StatisticsService
 from config import configs
 from db.tables import LicenseLevel
+from services.depends import get_s3_service
+from services.s3 import S3Service
 
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
@@ -234,6 +236,7 @@ if configs.work_type == 'FULL':
             service: ReportsService = Depends(get_report_service),
             users: UsersService = Depends(get_users_service),
             stat_service: StatisticsService = Depends(get_statistics_service),
+            s3_service: S3Service = Depends(get_s3_service),
     ):
         """Просмотр данных отчета по id"""
         if len(id) != 40:
@@ -249,7 +252,9 @@ if configs.work_type == 'FULL':
 
         try:
            get_files = await service.get_files(id)
-           files = {f.filename: f'https://georeport.ru/s3?key={f.link}' for f in get_files}
+           files = {}
+           for f in get_files:
+               files[f.filename] = await s3_service.generate_presigned_url(key=f.link)
         except:
             files = {}
 

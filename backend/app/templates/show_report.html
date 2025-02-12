@@ -41,7 +41,7 @@
           {% for key, value in files.items() %}
           <tr class="table__tr table__tr-additional">
             <td class="table__td">
-              {% if value.split('.')[-1] in ['png', 'jpg'] %}<a href="{{value}}" target="_blank" 
+              {% if key.split('.')[-1] in ['png', 'jpg'] %}<a href="{{value}}" target="_blank"
                 >{{ key }}</a
               >
               <img src="{{value}}" alt="" />{% else %}<a href="{{value}}" target="_blank"

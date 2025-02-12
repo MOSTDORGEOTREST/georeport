@@ -23,59 +23,6 @@ async def get(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Key have a wrong format"
         )
+    presigned_url = await s3_service.generate_presigned_url(key=key)
 
-    return RedirectResponse(url=f"{configs.endpoint_url}/{configs.bucket}/{key}")
-
-    '''
-    try:
-        # Получаем файл из S3
-        file = await s3_service.get(key)
-        body = file.get("Body")
-
-        # Проверяем, что body существует
-        if body is None:
-            print("File body is None for key: %s", key)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="File body is empty",
-            )
-        content_type = file.get("ContentType", "application/octet-stream")
-
-    except Exception as e:
-        print("Failed to get file from S3 for key: %s", key)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get file from S3",
-        )
-
-    async def stream_file():
-        total_size = 0
-        try:
-            # Читаем файл по частям
-            async for chunk in body.iter_chunks(chunk_size=8192):
-                total_size += len(chunk)
-                yield chunk
-        except RuntimeError as e:
-            print("RuntimeError during streaming: %s", str(e))
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Connection to S3 was closed unexpectedly.",
-            )
-        except Exception as e:
-            print("Unexpected error during streaming: %s", str(e))
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed during file streaming",
-            )
-        finally:
-            # Закрытие body
-            if body is not None:
-                try:
-                    await body.close()
-                except Exception as close_error:
-                    print("Failed to close S3 body: %s", str(close_error))
-        print("File streaming completed. Total size: %d bytes", total_size)
-
-    # Возвращаем поток данных в StreamingResponse
-    return StreamingResponse(stream_file(), media_type=content_type)
-    '''
+    return RedirectResponse(url=presigned_url)
