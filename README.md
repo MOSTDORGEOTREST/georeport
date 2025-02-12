@@ -2,7 +2,7 @@
 
 ### Сервис для аутентификации протоколов лабораторных испытаний. 
 
-![Схема](https://github.com/MOSTDORGEOTREST/georeport/backend/app/static/images/logo.png)
+![Схема](https://github.com/MOSTDORGEOTREST/georeport/blob/main/backend/app/static/images/logo.png)
 
 #### Функционал:
 * сервис данных пользователей
