@@ -19,7 +19,7 @@ services:
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET=${AWS_BUCKET}
     ports:
-      - 8555:8000
+      - "0.0.0.0:8555:8000"
     restart: always
     volumes:
       - /etc/timezone:/etc/timezone:ro
@@ -28,23 +28,11 @@ services:
   frontend:
     build: ./frontend/
     environment:
-      - REACT_APP_SERVER_IP=http://localhost:8555/
+      - REACT_APP_SERVER_IP=http://192.168.0.76:8555/
       - DISABLE_ESLINT_PLUGIN=true npm start
-    expose:
-      - "3000"
+    ports:
+      - "0.0.0.0:3000:3000"
     restart: unless-stopped
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-
-  server:
-    restart: always
-    image: nginx
-    volumes:
-      - ./app/key.key:/etc/ssl/key.key
-      - ./app/crt.crt:/etc/ssl/crt.crt
-      - ./server/conf.d:/etc/nginx/conf.d
-      - ./app:/app
-    ports:
-      - "80:80"
-      - "443:443"

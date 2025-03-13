@@ -53,6 +53,7 @@ origins = [
 ]
 
 origins += create_ip_ports_array(configs.host_ip, 3000, 8000, 80)
+origins += create_ip_ports_array(f"http://192.168.0.76", 3000, 8000, 80, 8555)
 
 allow_methods = [
     "GET",
