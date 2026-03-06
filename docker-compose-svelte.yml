@@ -38,12 +38,16 @@ services:
 
   frontend:
     build:
-      context: ./frontend/
-      args:
-        - REACT_APP_SERVER_IP=/
+      context: ./frontend-svelte/
     expose:
       - "80"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pidof nginx || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
@@ -67,7 +71,7 @@ services:
     volumes:
       - ./app/key.key:/etc/ssl/key.key:ro
       - ./app/crt.crt:/etc/ssl/crt.crt:ro
-      - ./server/conf.d:/etc/nginx/conf.d:ro
+      - ./server/conf.d-svelte:/etc/nginx/conf.d:ro
       - ./app:/app:ro
     ports:
       - "80:80"
@@ -76,7 +80,7 @@ services:
       backend:
         condition: service_healthy
       frontend:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   redis_data:

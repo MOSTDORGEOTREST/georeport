@@ -1,54 +1,125 @@
-# Georeport
+# GEOREPORT
 
-### Сервис для аутентификации протоколов лабораторных испытаний. 
+> Сервис аутентификации протоколов лабораторных испытаний. Гарантия подлинности данных.
 
 ![logo](https://s3.timeweb.com/cw78444-3db3e634-248a-495a-8c38-9f7322725c84/logo.png)
 
-#### Функционал:
-* сервис данных пользователей
-* сервис лицензий хранит данные лицензий и проверяет лицензию пользователя при отправке запросов пользователя
-* сервис отчетов хранит данные по всем отчетам в базе
+**GEOREPORT** — проект компании «АО МОСТДОРГЕОТРЕСТ» для аутентификации протоколов лабораторных испытаний и защиты от подделки.
 
-#### Стек:
-* fastapi + postgresql + sqlalchemy
-* html + CSS + js
+---
 
-#### [Схема БД](https://dbdiagram.io/d/64edcb6a02bd1c4a5e99ec69)
+## Возможности
 
-## Для разработки:
-1. Скопировать файл .env в корень проекта
-    
-2. Создать папку для проекта. Открыть папку в терминале и выполнить:\
-    `git init`\
-    `git clone https://github.com/tnick1502/report_authentication.git`
+- **Управление пользователями** — лицензии, лимиты, доступ
+- **Протоколы** — хранение и верификация отчётов
+- **Личный кабинет** — создание протоколов, QR-коды, статистика просмотров
+- **API** — интеграция с внешними системами
 
-3. Запуск через docker-compose:\
-    `docker-compose -f docker-compose-dev.yml up`\
-	или моя Mac:\
-    `docker-compose -f docker-compose-dev-mac.yml --env-file ./env.txt up`
+---
 
-## Деплой:
-~/ = папка проекта 
+## Стек
 
-1. Скопировать файл .env в ~/
+| Слой | Технологии |
+|------|------------|
+| **Backend** | FastAPI, PostgreSQL, SQLAlchemy, Redis, S3/MinIO |
+| **Frontend** | **Svelte** (SvelteKit) или **React** (CRA) |
+| **Инфра** | Docker, Nginx, SSL |
 
-2. Добавить конфигуратор nginx. Дефолтный конфигуратор nginx находится в ~/server/conf.d/app.conf (устанавливается автоматически в докер). Сертификат и ключ key.key и crt.crt должны находится в папке ~/*
-    
-3. Открыть папку ~/ в терминале и выполнить:\
-    `git init`\
-    `git clone https://github.com/tnick1502/report_authentication.git`
+---
 
-4. Запуск через docker-compose:\
-    `docker-compose up --force-recreate -d --build`
+## Фронтенды
 
+| Вариант | Папка | Описание |
+|---------|-------|----------|
+| **Svelte** | `frontend-svelte/` | SvelteKit, glassmorphism |
+| **React** | `frontend/` | Create React App |
 
-Для очищения докера от проекта:\
-    `docker rm $(docker ps -a -q) -f`\
-    `docker rmi $(docker images -a -q) -f`
+---
 
-Для миграции:\
-1. Прописать в alembic.ini параметр sqlalchemy.url
-2. Перейти в папку backend
-3. Запускать скрипт:
-    `poetry run alembic upgrade head`
+## Быстрый старт (тест)
 
+Полный стек: PostgreSQL, Redis, MinIO, backend + frontend.
+
+**Svelte:**
+```bash
+cp .env.example .env
+# Отредактируйте .env при необходимости
+docker compose -f docker-compose-test-svelte.yml up --build -d
+```
+
+**React:**
+```bash
+cp .env.example .env
+docker compose -f docker-compose-test.yml up --build -d
+```
+
+Приложение: `http://localhost`
+
+---
+
+## Деплой (production)
+
+1. **Скопируйте `.env`:**
+   ```bash
+   cp .env.example .env
+   ```
+   Заполните переменные (PostgreSQL, JWT, S3/MinIO).
+
+2. **SSL-сертификаты** — положите `key.key` и `crt.crt` в `./app/`.
+
+3. **Запуск:**
+
+   **Svelte:**
+   ```bash
+   docker compose -f docker-compose-svelte.yml up --build -d
+   ```
+
+   **React:**
+   ```bash
+   docker compose up --build -d
+   ```
+
+---
+
+## Структура проекта
+
+```
+.
+├── backend/              # FastAPI
+├── frontend/              # React (CRA)
+├── frontend-svelte/       # Svelte (SvelteKit)
+├── server/
+│   ├── conf.d/           # Nginx для React
+│   └── conf.d-svelte/    # Nginx для Svelte
+├── docker-compose.yml           # Production (React)
+├── docker-compose-svelte.yml    # Production (Svelte)
+├── docker-compose-test.yml      # Тест (React)
+├── docker-compose-test-svelte.yml  # Тест (Svelte)
+└── .env.example
+```
+
+---
+
+## Миграции
+
+```bash
+cd backend
+poetry run alembic upgrade head
+```
+
+---
+
+## Схема БД
+
+[Схема](https://dbdiagram.io/d/64edcb6a02bd1c4a5e99ec69)
+
+---
+
+## Очистка Docker
+
+```bash
+docker compose -f docker-compose-test-svelte.yml down -v
+# или
+docker rm $(docker ps -a -q) -f
+docker rmi $(docker images -a -q) -f
+```
