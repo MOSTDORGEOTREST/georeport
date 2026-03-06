@@ -1,0 +1,97 @@
+services:
+  backend:
+    build: ./backend/
+    command: bash -c 'poetry run uvicorn main:app --host 0.0.0.0 --reload'
+    environment:
+      - FILE_COUNT=10
+      - FILE_SIZE=1024
+      - DATABASE_URL=postgresql+asyncpg://georeport:georeport@postgres:5432/georeport
+      - WORK_TYPE=BACKEND
+      - JWT_SECRET=test-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRATION=3600
+      - SUPERUSER_NAME=admin
+      - SUPERUSER_PASSWORD=admin
+      - AWS_URI=http://minio:9000
+      - AWS_ACCCESS_KEY=minioadmin
+      - AWS_SERVICE_NAME=s3
+      - AWS_SECRET_KEY=minioadmin
+      - AWS_REGION=us-east-1
+      - AWS_BUCKET=georeport
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8555:8000"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend/
+      args:
+        - REACT_APP_SERVER_IP=http://localhost:8555/
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=georeport
+      - POSTGRES_PASSWORD=georeport
+      - POSTGRES_DB=georeport
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U georeport"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: unless-stopped
+    volumes:
+      - minio_data:/data
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb local/georeport --ignore-existing;
+      /usr/bin/mc anonymous set public local/georeport;
+      exit 0;
+      "
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

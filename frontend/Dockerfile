@@ -1,12 +1,23 @@
-FROM node:16-alpine
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
-COPY package.json /app
-COPY package-lock.json /app
-RUN apk add --no-cache yarn \
-    && yarn install --network-timeout 1000000\
-    && yarn global add update-browserslist-db@latest
-COPY . /app
-CMD ["yarn", "start"]
+COPY package.json package-lock.json ./
+RUN npm ci
 
+COPY . .
+
+ARG REACT_APP_SERVER_IP=/
+ENV REACT_APP_SERVER_IP=${REACT_APP_SERVER_IP}
+ENV DISABLE_ESLINT_PLUGIN=true
+
+RUN npm run build
+
+FROM nginx:alpine
+
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -49,7 +49,9 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
-    "http://localhost:8555"
+    "http://localhost:8555",
+    "https://georeport.ru",
+    "http://georeport.ru",
 ]
 
 origins += create_ip_ports_array(configs.host_ip, 3000, 8000, 80)
@@ -313,7 +315,7 @@ else:
 
 @app.on_event("startup")
 async def startup_event():
-    redis = aioredis.from_url("redis://localhost:6379", encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379"), encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
     async with engine.begin() as conn:

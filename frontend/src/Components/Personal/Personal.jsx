@@ -5,6 +5,8 @@ import { useRef } from "react";
 import { useContext } from "react";
 import Context from "../../context";
 import { useEffect } from "react";
+import ViewsChart from "../Home/ViewsChart";
+import { parseViews } from "../../Utils/views";
 
 export default function Personal() {
   const { logged, setLogged } = useContext(Context);
@@ -14,6 +16,8 @@ export default function Personal() {
 
   const [pageLim, setPageLim] = useState(9);
   const [page, setPage] = useState(0);
+  const [views, setViews] = useState({ views: [], dates: [] });
+  const [chartLoaded, setChartLoaded] = useState(false);
 
   const [objects, setObjects] = useState(null);
   const [objectsData, setObjectsData] = useState(null);
@@ -179,6 +183,19 @@ export default function Personal() {
     fetchUserData();
     fetchReportsCount();
     fetchObjects();
+
+    fetch(`${process.env.REACT_APP_SERVER_IP}stat/period_count`, {
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data && Object.keys(data).length > 0) {
+          const resultData = parseViews(data);
+          setViews(resultData);
+          setChartLoaded(true);
+        }
+      })
+      .catch(() => {});
   }, [logged]);
 
   useEffect(() => {
@@ -1151,6 +1168,12 @@ export default function Personal() {
       </div>
 
       <br />
+
+      {chartLoaded ? (
+        <div style={{ width: "100%", maxWidth: "100%" }}>
+          <ViewsChart dataset={views} />
+        </div>
+      ) : null}
     </>
   );
 }

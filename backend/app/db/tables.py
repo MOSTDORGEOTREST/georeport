@@ -72,5 +72,4 @@ class Statistics(Base):
 
 ix_create_date = Index('ix_create_date', Reports.datetime, postgresql_using='btree')
 ix_object_number = Index('ix_object_number', Reports.object_number, postgresql_using='btree')
-ix_files_report_id = Index('ix_files_report_id', Files.report_id, postgresql_using='btree')
 ix_statistics_datetime = Index('ix_statistics_datetime', Statistics.datetime, postgresql_using='btree')

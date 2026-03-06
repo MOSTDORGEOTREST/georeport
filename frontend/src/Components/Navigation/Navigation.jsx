@@ -105,7 +105,7 @@ export default function Navigation() {
                       </NavHashLink>
                     </li>
 
-                    {/* <li className="nav-item">
+                    <li className="nav-item">
                       <NavHashLink
                         className="nav-link"
                         smooth
@@ -115,7 +115,7 @@ export default function Navigation() {
                       >
                         Покупка
                       </NavHashLink>
-                    </li> */}
+                    </li>
 
                     <li className="nav-item">
                       <NavHashLink
@@ -159,19 +159,20 @@ export default function Navigation() {
       )}
 
       <div className="content__container container-mdgt">
-        {/* <h2 class="container__title">
-					{% block content_title %} {% endblock %}
-				</h2> */}
-        <>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/report" element={<Report />} />
-            <Route path="/report/:id" element={<Report />} />
-            {/* 404 Page */}
-            {/* <Route path="*" element={<div>404</div>} /> */}
-          </Routes>
-        </>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <h2 className="container__title">Проект GEOREPORT</h2>
+                <Home />
+              </>
+            }
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/report" element={<Report />} />
+          <Route path="/report/:id" element={<Report />} />
+        </Routes>
       </div>
     </div>
   );

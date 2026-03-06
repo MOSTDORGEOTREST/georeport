@@ -6,15 +6,12 @@ import "./Footer.css";
 import mdgt from "./mdgt.png";
 
 export default function Footer() {
-  // load
   useEffect(() => {
     const toastItem = document.getElementById("toast");
     const toast = new Toast(toastItem);
 
-    // console.log(toast)
-
     const toastBtnAccept = document.getElementById("btnAccept");
-    toastBtnAccept.addEventListener("click", (event) => {
+    toastBtnAccept.addEventListener("click", () => {
       setCookie("allowCookies", "1", 7);
       toast.hide();
     });
@@ -40,11 +37,6 @@ export default function Footer() {
       return null;
     }
 
-    // function eraseCookie(name) {
-    //   document.cookie =
-    //     name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    // }
-
     function cookieConsent() {
       if (!getCookie("allowCookies")) {
         toast.show();
@@ -57,40 +49,48 @@ export default function Footer() {
   return (
     <>
       <footer className="footer__container">
+        <div className="copy">
+          РАЗРАБОТАНО ГЕОТЕХНИЧЕСКОЙ ЛАБОРАТОРИЕЙ МОСТДОРГЕОТРЕСТ
+        </div>
         <div className="container_contact" id="contact">
           <div className="container-mdgt">
-            <div className="row row-mdgt">
-              <div className="contacts__double-contact">
-                <div className="">
-                  <h3 className="contacts__header">
-                    <i className="bi bi-envelope"></i> Почта:
-                  </h3>
-                  <div className="contacts__description">
-                    <a
-                      href="mailto:support@mdgt.ru"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="contacts__link"
-                    >
-                      support@mdgt.ru
-                    </a>
+            <div className="row">
+              <div className="col-md-3 col-sm-6">
+                <div className="contacts__double-contact">
+                  <div className="">
+                    <h3 className="contacts__header">
+                      <i className="bi bi-envelope"></i> Почта:
+                    </h3>
+                    <div className="contacts__description">
+                      <a
+                        href="mailto:mostdorgeotrest@mail.ru"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="contacts__link"
+                      >
+                        support@mdgt.ru
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="contacts__double-contact">
-                <div className="">
-                  <h3 className="contacts__header">
-                    <i className="bi bi-globe"></i> Веб-сайт:
-                  </h3>
-                  <div className="contacts__description">
-                    <a
-                      href="http://mdgt.site/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="contacts__link"
-                    >
-                      mdgt.site
-                    </a>
+
+              <div className="col-md-3 col-sm-6">
+                <div className="contacts__double-contact">
+                  <div className="">
+                    <h3 className="contacts__header">
+                      <i className="bi bi-globe"></i> Веб-сайт:
+                    </h3>
+                    <div className="contacts__description">
+                      <a
+                        href="https://mdgt.site/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="contacts__link"
+                      >
+                        mdgt.site
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -110,6 +110,24 @@ export default function Footer() {
           <span className="text-muted_mdgt">
             &copy; Мостдоргеотрест {new Date().getFullYear()}
           </span>
+        </div>
+        <div className="footer__docs">
+          <a
+            className="footer__docs-link"
+            href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Согласие на обработку персональных данных
+          </a>
+          <a
+            className="footer__docs-link"
+            href="/static/docs/Политика_на сайт.pdf"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Политика конфиденциальности
+          </a>
         </div>
 
         <div
@@ -154,13 +172,29 @@ export default function Footer() {
             id="toast"
             role="alert"
             data-bs-autohide="false"
+            style={{ backgroundColor: "var(--text-color)" }}
           >
             <div className="toast-body p-4 d-flex flex-column">
               <h4>Мы используем файлы cookie.</h4>
               <p>
-                Мы используем cookie для обеспечения функционирования веб-сайта
-                и улучшения качества обслуживания. Если Вы не хотите, чтобы эти
-                данные обрабатывались, отключите cookie в настройках браузера.
+                Мы используем Cookies в том числе с использованием сервиса
+                веб-аналитики &quot;Яндекс.Метрика&quot;. Продолжая использовать
+                наш сайт, вы даете{" "}
+                <a
+                  className="contacts__link"
+                  href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf"
+                >
+                  согласие
+                </a>{" "}
+                на обработку данных Cookies в том числе с использованием сервиса
+                веб-аналитики &quot;Яндекс.Метрика&quot; в соответствии с{" "}
+                <a
+                  className="contacts__link"
+                  href="/static/docs/Политика_на сайт.pdf"
+                >
+                  Политикой
+                </a>
+                .
               </p>
               <div className="ms-auto">
                 <button type="button" className="btn btn-light" id="btnAccept">

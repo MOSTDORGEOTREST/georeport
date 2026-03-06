@@ -8,7 +8,9 @@ ENV PATH=$PATH:$HOME/.poetry/bin
 
 EXPOSE 8555
 
-# Install Poetry
+RUN apt-get update && apt-get install -y --no-install-recommends libzbar-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 - \
     && ln -s /etc/poetry/bin/poetry /usr/local/bin/poetry
 
@@ -20,12 +22,4 @@ RUN poetry config virtualenvs.create false && \
 
 COPY app /code/app
 
-RUN apt-get update
-RUN apt-get install -y libzbar-dev
-RUN dpkg -L libzbar-dev; ls -l /usr/include/zbar.h
-
 RUN chmod -R 777 ./
-
-
-# COPY crt.crt /etc/ssl/
-# COPY key.key /etc/ssl/

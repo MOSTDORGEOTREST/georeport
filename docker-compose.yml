@@ -1,7 +1,7 @@
 services:
   backend:
     build: ./backend/
-    command: bash -c 'poetry run uvicorn main:app --host 0.0.0.0'
+    command: bash -c 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'
     environment:
       - FILE_COUNT=10
       - FILE_SIZE=1024
@@ -18,33 +18,58 @@ services:
       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET=${AWS_BUCKET}
-    ports:
-      - 8555:8000
+      - REDIS_URL=redis://redis:6379
+    expose:
+      - "8000"
     restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
   frontend:
-    build: ./frontend/
-    environment:
-      - REACT_APP_SERVER_IP=http://localhost:8555/
-      - DISABLE_ESLINT_PLUGIN=true npm start
+    build:
+      context: ./frontend/
+      args:
+        - REACT_APP_SERVER_IP=/
     expose:
-      - "3000"
+      - "80"
     restart: unless-stopped
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
 
-  server:
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
     restart: always
-    image: nginx
     volumes:
-      - ./app/key.key:/etc/ssl/key.key
-      - ./app/crt.crt:/etc/ssl/crt.crt
-      - ./server/conf.d:/etc/nginx/conf.d
-      - ./app:/app
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  server:
+    image: nginx
+    restart: always
+    volumes:
+      - ./app/key.key:/etc/ssl/key.key:ro
+      - ./app/crt.crt:/etc/ssl/crt.crt:ro
+      - ./server/conf.d:/etc/nginx/conf.d:ro
+      - ./app:/app:ro
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+
+volumes:
+  redis_data:

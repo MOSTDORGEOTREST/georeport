@@ -93,6 +93,25 @@
   color: var(--headr-color);
 }
 
+.footer__docs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 0.25rem;
+  padding: 0.25rem 0.5rem 0.75rem;
+}
+
+.footer__docs-link {
+  font-size: var(--smaller-font-size);
+  color: var(--text-color-super-light);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer__docs-link:hover {
+  color: var(--green_logo);
+}
+
 .normalMap {
   min-height: fit-content;
 }

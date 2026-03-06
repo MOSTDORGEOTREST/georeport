@@ -106,6 +106,11 @@
   margin: 0;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body,
 button,
 input,
@@ -194,6 +199,7 @@ ul {
 
 .container-mdgt > .row {
   row-gap: 1.5rem;
+  justify-content: center;
 }
 
 .wrapper {
@@ -307,15 +313,3 @@ ul {
 }
 
 
-
-.fixed-bottom.p-4 {
-  padding: 0px !important;
-}
-
-.fixed-bottom.p-4 .toast.text-white.w-100.mw-100 {
-  padding: 1.5rem !important;
-
-  background-color: transparent !important;
-  background-clip: initial !important;
-  border: none !important;
-}
