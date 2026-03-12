@@ -209,13 +209,13 @@
       width: 60%;
       max-width: 300px;
       height: 100%;
-      background: rgba(10, 31, 10, 0.92);
-      backdrop-filter: blur(48px);
-      -webkit-backdrop-filter: blur(48px);
+      background: rgba(10, 31, 10, 0.96);
+      backdrop-filter: blur(80px);
+      -webkit-backdrop-filter: blur(80px);
       padding: 4rem 2rem 2rem;
       transition: right 0.3s ease;
       border-left: 1px solid var(--glass-border);
-      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
+      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.6);
     }
 
     .header__menu--open {

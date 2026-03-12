@@ -4,8 +4,10 @@
   import { get as apiGet } from '$lib/api.js';
 
   let hovered = $state(false);
+  let scrollProgress = $state(0);
+  let touchMode = $state(false);
   let reportId = $state(null);
-  let scrollObservedEl = null;
+  const SCROLL_END = 400;
 
   onMount(async () => {
     try {
@@ -18,20 +20,16 @@
 
     const isTouch = () => window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window;
     if (isTouch()) {
-      scrollObservedEl = document.querySelector('.home-img');
-      if (scrollObservedEl) {
-        const obs = new IntersectionObserver(
-          (entries) => {
-            for (const e of entries) {
-              hovered = e.isIntersecting;
-            }
-          },
-          { threshold: 0.9, rootMargin: '0px' }
-        );
-        obs.observe(scrollObservedEl);
-        return () => {
-          try { obs.unobserve(scrollObservedEl); } catch {}
+      touchMode = true;
+      const el = document.querySelector('.home-img');
+      if (el) {
+        const update = () => {
+          const y = window.scrollY;
+          scrollProgress = Math.min(1, Math.max(0, y / SCROLL_END));
         };
+        update();
+        window.addEventListener('scroll', update, { passive: true });
+        return () => window.removeEventListener('scroll', update);
       }
     }
   });
@@ -58,6 +56,8 @@
       <div
         class="home-img"
         class:home-img--hover={hovered}
+        class:home-img--touch={touchMode}
+        style="--scroll-progress: {scrollProgress}"
         onmouseenter={() => hovered = true}
         onmouseleave={() => hovered = false}
       >
@@ -289,6 +289,27 @@
 
     .home-img__image {
       max-height: 300px;
+    }
+
+    .home-img--touch .home-img__image {
+      transform: scale(calc(1 + 0.02 * var(--scroll-progress, 0)));
+      transition: none;
+    }
+
+    .home-img--touch .home-img__overlay {
+      background: rgba(0, 0, 0, calc(0.4 * var(--scroll-progress, 0)));
+      transition: none;
+    }
+
+    .home-img--touch .home-img__qr-wrapper {
+      background: rgba(255, 255, 255, calc(0.15 * var(--scroll-progress, 0)));
+      transform: scale(calc(1 + 0.5 * var(--scroll-progress, 0)));
+      transition: none;
+    }
+
+    .home-img--touch .home-img__qr {
+      opacity: var(--scroll-progress, 0);
+      transition: none;
     }
 
     .home-img--hover .home-img__qr-wrapper {
