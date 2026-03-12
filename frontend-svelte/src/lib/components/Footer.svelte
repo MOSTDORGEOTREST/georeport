@@ -20,8 +20,8 @@
       <h3 class="footer__contact-title">
         <i class="ri-global-line"></i> Веб-сайт:
       </h3>
-      <a href="https://mdgt.site/" class="footer__contact-link" target="_blank" rel="noreferrer">
-        mdgt.site
+      <a href="https://mdgt.ru/" class="footer__contact-link" target="_blank" rel="noreferrer">
+        mdgt.ru
       </a>
     </div>
   </div>

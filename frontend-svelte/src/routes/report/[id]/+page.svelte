@@ -79,7 +79,7 @@
         <img src="/images/lock.gif" alt="lock" class="report__header-icon" />
         <div class="report__header-info">
           <h2 class="report__header-title">МОСТДОРГЕОТРЕСТ</h2>
-          <a href="https://mdgt.ru" target="_blank" class="report__header-url">mdgt.ru</a>
+          <a href="https://mdgt.ru/" target="_blank" class="report__header-url">mdgt.ru</a>
         </div>
       </div>
 
@@ -179,6 +179,7 @@
   .report__header {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 1rem;
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--glass-border);
@@ -193,6 +194,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
   }
 
   .report__header-title {

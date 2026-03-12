@@ -1,7 +1,40 @@
 <script>
+  import { onMount } from 'svelte';
   import InfoGraphic from '$lib/components/InfoGraphic.svelte';
+  import { get as apiGet } from '$lib/api.js';
 
   let hovered = $state(false);
+  let reportId = $state(null);
+  let scrollObservedEl = null;
+
+  onMount(async () => {
+    try {
+      const res = await apiGet('/reports/sample_id/');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.id) reportId = data.id;
+      }
+    } catch {}
+
+    const isTouch = () => window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window;
+    if (isTouch()) {
+      scrollObservedEl = document.querySelector('.home-img');
+      if (scrollObservedEl) {
+        const obs = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              hovered = e.isIntersecting;
+            }
+          },
+          { threshold: 0.9, rootMargin: '0px' }
+        );
+        obs.observe(scrollObservedEl);
+        return () => {
+          try { obs.unobserve(scrollObservedEl); } catch {}
+        };
+      }
+    }
+  });
 </script>
 
 <div class="home">
@@ -30,12 +63,15 @@
       >
         <img class="home-img__image" src="/images/mainimg.png" alt="GEOREPORT протокол" />
         <div class="home-img__overlay">
-          <a
-            href="/report/4c795fb5002852b5af5df9e5de1e44b11b920d6f"
-            class="home-img__qr-wrapper"
-          >
-            <img src="/images/qr_index.png" alt="QR" class="home-img__qr" />
-          </a>
+          {#if reportId}
+            <a href="/report/{reportId}" class="home-img__qr-wrapper">
+              <img src="/images/qr_index.png" alt="QR" class="home-img__qr" />
+            </a>
+          {:else}
+            <div class="home-img__qr-wrapper home-img__qr-wrapper--placeholder">
+              <img src="/images/qr_index.png" alt="QR" class="home-img__qr" />
+            </div>
+          {/if}
         </div>
       </div>
     </div>
@@ -66,9 +102,8 @@
         личный кабинет, через который вы сможете аутентифицировать свои
         протоколы.
       </p>
-      <p class="cta__sub">Вы можете бесплатно протестировать сервис:</p>
       <a class="btn btn-accent cta__btn" href="mailto:tnick1502@mail.ru">
-        Протестировать
+        Связаться
       </a>
     </div>
   </section>
@@ -106,7 +141,7 @@
   .hero__content {
     flex: 1;
     padding: 1.5rem 2rem;
-    text-align: justify;
+    text-align: left;
     color: var(--text-secondary);
     line-height: 1.7;
   }
@@ -171,6 +206,11 @@
     opacity: 1;
   }
 
+  .home-img__qr-wrapper--placeholder {
+    cursor: default;
+    pointer-events: none;
+  }
+
   .section {
     width: 100%;
     display: flex;
@@ -218,11 +258,6 @@
     color: var(--text-secondary);
     max-width: 600px;
     line-height: 1.6;
-  }
-
-  .cta__sub {
-    color: var(--text-muted);
-    font-size: 0.9rem;
   }
 
   .cta__btn {

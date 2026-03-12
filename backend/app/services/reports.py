@@ -70,6 +70,15 @@ class ReportsService:
         )
         return result.scalar_one()
 
+    async def get_first_report_id(self) -> Optional[str]:
+        """ID первого отчёта для демо на главной (относительная ссылка)"""
+        result = await self.session.execute(
+            select(tables.Reports.id)
+            .order_by(tables.Reports.datetime.desc())
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
     async def get_count_in_object(self, user_id: str, object_number: Optional[str] = None) -> int:
         """Получение количества отчетов в объекте для пользователя"""
         query = select(func.count(tables.Reports.id)).filter_by(user_id=user_id)

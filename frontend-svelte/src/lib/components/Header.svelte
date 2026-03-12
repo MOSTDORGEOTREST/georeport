@@ -30,13 +30,11 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    setTimeout(() => {
-      const el = document.querySelector(hash);
-      if (el) {
-        const top = el.offsetTop - 80;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
-    }, 100);
+    const el = document.querySelector(hash);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   }
 
   async function signOut() {
@@ -51,7 +49,7 @@
 
 <header class="header glass">
   <nav class="header__nav">
-    <a href="/" class="header__logo" onclick={() => scrollTo('#')}>
+    <a href="/" class="header__logo" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#'); } }}>
       <img src="/images/logo.png" alt="GEOREPORT" class="header__logo-img" />
     </a>
 
@@ -65,10 +63,10 @@
       >
         <div class="header__menu" class:header__menu--open={mobileOpen}>
           <ul class="header__links">
-            <li><a href="/" class="header__link" onclick={() => scrollTo('#')}>Главная</a></li>
-            <li><a href="/#about" class="header__link" onclick={() => scrollTo('#about')}>Описание проекта</a></li>
-            <li><a href="/#license" class="header__link" onclick={() => scrollTo('#license')}>Покупка</a></li>
-            <li><a href="/#contact" class="header__link" onclick={() => scrollTo('#contact')}>Контакты</a></li>
+            <li><a href="/" class="header__link" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#'); } }}>Главная</a></li>
+            <li><a href="/#about" class="header__link" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#about'); } }}>Описание проекта</a></li>
+            <li><a href="/#license" class="header__link" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#license'); } }}>Покупка</a></li>
+            <li><a href="/#contact" class="header__link" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#contact'); } }}>Контакты</a></li>
             <li><a href="/login" class="header__link" onclick={closeNav}>Личный кабинет</a></li>
           </ul>
           <button class="header__close" onclick={closeNav}>
@@ -211,12 +209,13 @@
       width: 60%;
       max-width: 300px;
       height: 100%;
-      background: rgba(10, 31, 10, 0.95);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
+      background: rgba(10, 31, 10, 0.92);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
       padding: 4rem 2rem 2rem;
       transition: right 0.3s ease;
       border-left: 1px solid var(--glass-border);
+      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
     }
 
     .header__menu--open {

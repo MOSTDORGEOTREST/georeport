@@ -189,4 +189,14 @@ async def count(
     return await service.count()
 
 
+@router.get("/sample_id/")
+@cache(expire=60)
+async def sample_id(
+        service: ReportsService = Depends(get_report_service)
+):
+    """ID первого отчёта для демо на главной (относительная ссылка /report/{id})"""
+    report_id = await service.get_first_report_id()
+    return {"id": report_id}
+
+
 
