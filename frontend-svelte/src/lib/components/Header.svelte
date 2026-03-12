@@ -209,7 +209,7 @@
       width: 60%;
       max-width: 300px;
       height: 100%;
-      background: rgba(10, 31, 10, 0.96);
+      background: rgba(10, 31, 10, 0.98);
       backdrop-filter: blur(80px);
       -webkit-backdrop-filter: blur(80px);
       padding: 4rem 2rem 2rem;
@@ -226,6 +226,20 @@
       flex-direction: column;
       gap: 1.5rem;
       align-items: flex-start;
+    }
+
+    .header__menu .header__links {
+      padding-top: 2rem;
+    }
+
+    .header__menu .header__link {
+      color: var(--text-primary);
+      font-size: 1rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .header__menu .header__link:hover {
+      color: var(--accent-light);
     }
 
     .header__close {
