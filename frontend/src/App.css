@@ -7,34 +7,39 @@
 }
 
 :root {
-  --bg-primary: #0a1f0a;
-  --bg-secondary: #0d1b2a;
-  --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-bg-hover: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-hover: rgba(255, 255, 255, 0.25);
+  color-scheme: light;
+  --bg-primary: #f7f9f4;
+  --bg-secondary: #edf2e9;
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-bg-hover: rgba(255, 255, 255, 0.98);
+  --glass-border: rgba(47, 67, 52, 0.14);
+  --glass-border-hover: rgba(78, 111, 45, 0.32);
   --glass-blur: blur(20px);
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.68);
-  --text-muted: rgba(255, 255, 255, 0.45);
-  --accent: #73893d;
-  --accent-light: #8fa854;
-  --accent-bright: #a8c46a;
-  --accent-glow: rgba(115, 137, 61, 0.4);
-  --accent-soft: rgba(143, 168, 84, 0.14);
-  --accent-gradient: linear-gradient(135deg, #73893d 0%, #8fa854 100%);
-  --gold: #d3a462;
-  --gold-soft: rgba(211, 164, 98, 0.15);
-  --danger: #d9534f;
-  --danger-glow: rgba(217, 83, 79, 0.35);
-  --danger-soft: rgba(217, 83, 79, 0.12);
+  --text-primary: #1c2b21;
+  --text-secondary: #526157;
+  --text-muted: #68766d;
+  --accent: #55772f;
+  --accent-light: #668b37;
+  --accent-bright: #4f7428;
+  --accent-glow: rgba(85, 119, 47, 0.22);
+  --accent-soft: rgba(102, 139, 55, 0.11);
+  --accent-gradient: linear-gradient(135deg, #4f7428 0%, #739846 100%);
+  --gold: #a97534;
+  --gold-soft: rgba(169, 117, 52, 0.12);
+  --danger: #c4423d;
+  --danger-glow: rgba(196, 66, 61, 0.22);
+  --danger-soft: rgba(196, 66, 61, 0.09);
+  --surface-elevated: rgba(255, 255, 255, 0.98);
+  --surface-soft: rgba(72, 102, 55, 0.06);
+  --line-soft: rgba(28, 43, 33, 0.08);
+  --overlay: rgba(20, 30, 23, 0.45);
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-glass: 0 14px 42px rgba(39, 57, 42, 0.09);
   --header-height: 4.5rem;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-body: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -71,10 +76,9 @@ body::before {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(ellipse 60% 50% at 15% 0%, rgba(115, 137, 61, 0.18), transparent 60%),
-    radial-gradient(ellipse 50% 40% at 90% 15%, rgba(211, 164, 98, 0.08), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 80% 95%, rgba(97, 61, 137, 0.16), transparent 65%),
-    linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #1a0a2e 100%);
+    radial-gradient(ellipse 62% 48% at 12% 0%, rgba(115, 152, 70, 0.16), transparent 64%),
+    radial-gradient(ellipse 46% 38% at 92% 18%, rgba(195, 159, 102, 0.12), transparent 66%),
+    linear-gradient(145deg, #fbfcf9 0%, var(--bg-primary) 48%, var(--bg-secondary) 100%);
   pointer-events: none;
 }
 
@@ -85,8 +89,8 @@ body::after {
   inset: 0;
   z-index: -1;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(47, 67, 52, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47, 67, 52, 0.035) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
@@ -101,8 +105,8 @@ body::after {
 }
 
 ::selection {
-  background: rgba(143, 168, 84, 0.35);
-  color: #fff;
+  background: rgba(102, 139, 55, 0.22);
+  color: var(--text-primary);
 }
 
 a {
@@ -154,7 +158,7 @@ ul {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-glass), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: var(--shadow-glass), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   transition: var(--transition);
 }
 
@@ -228,7 +232,7 @@ ul {
   width: 100%;
   padding: 0.7rem 1rem;
   min-height: 44px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-elevated);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -247,7 +251,7 @@ ul {
 .input-glass:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: rgba(255, 255, 255, 0.08);
+  background: #fff;
 }
 
 .input-glass.error {

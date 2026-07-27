@@ -451,7 +451,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    background: rgba(12, 28, 14, 0.97);
+    background: var(--surface-elevated);
     overflow: hidden;
     animation: scaleIn 0.18s ease-out;
     transform-origin: top right;
@@ -538,7 +538,7 @@
 
   .table td {
     padding: 0.65rem 0.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--line-soft);
     color: var(--text-secondary);
     vertical-align: middle;
   }
@@ -634,8 +634,8 @@
   }
 
   .card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-elevated);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     padding: 0.9rem;
     display: flex;
@@ -674,7 +674,7 @@
   }
 
   .card__data {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-top: 1px solid var(--line-soft);
     padding-top: 0.6rem;
     display: flex;
     flex-direction: column;

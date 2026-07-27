@@ -77,7 +77,11 @@
 <header class="header" class:header--scrolled={scrolled}>
   <nav class="header__nav">
     <a href="/" class="header__logo" aria-label="GEOREPORT — на главную" onclick={(e) => { if (pathname === '/') { e.preventDefault(); scrollTo('#'); } }}>
-      <img src="/images/logo.png" alt="GEOREPORT" class="header__logo-img" />
+      <img src="/images/logo-2.png" alt="" class="header__logo-mark" />
+      <span class="header__logo-copy">
+        <strong>GEOREPORT</strong>
+        <small>Защита протоколов</small>
+      </span>
     </a>
 
     {#if !isLoginPage}
@@ -137,7 +141,10 @@
 >
   <aside class="drawer__panel">
     <div class="drawer__head">
-      <img src="/images/logo.png" alt="GEOREPORT" class="drawer__logo" />
+      <div class="drawer__brand">
+        <img src="/images/logo-2.png" alt="" class="drawer__logo" />
+        <span>GEOREPORT</span>
+      </div>
       <button class="drawer__close" onclick={closeNav} aria-label="Закрыть меню" tabindex={mobileOpen ? 0 : -1}>
         <i class="ri-close-line" aria-hidden="true"></i>
       </button>
@@ -197,7 +204,7 @@
     left: 0;
     width: 100%;
     z-index: 100;
-    background: rgba(10, 31, 10, 0.7);
+    background: rgba(250, 252, 248, 0.84);
     border-bottom: 1px solid var(--glass-border);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -205,8 +212,8 @@
   }
 
   .header--scrolled {
-    background: rgba(10, 31, 10, 0.85);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 34px rgba(39, 57, 42, 0.1);
   }
 
   .header__nav {
@@ -222,12 +229,36 @@
   .header__logo {
     display: flex;
     align-items: center;
+    gap: 0.7rem;
     text-decoration: none;
   }
 
-  .header__logo-img {
-    height: 50px;
-    width: auto;
+  .header__logo-mark {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 9px rgba(43, 63, 36, 0.18));
+  }
+
+  .header__logo-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .header__logo-copy strong {
+    color: var(--text-primary);
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+  }
+
+  .header__logo-copy small {
+    color: var(--text-muted);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 0.3rem;
   }
 
   .header__links {
@@ -289,7 +320,7 @@
   }
 
   .header__link--cta:hover {
-    background: rgba(143, 168, 84, 0.24);
+    background: var(--accent);
     border-color: var(--accent-light);
     color: #fff;
   }
@@ -314,7 +345,7 @@
     position: fixed;
     inset: 0;
     z-index: 200;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--overlay);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     opacity: 0;
@@ -335,9 +366,9 @@
     width: min(85%, 340px);
     display: flex;
     flex-direction: column;
-    background: linear-gradient(160deg, #10240f 0%, #0e1a26 100%);
+    background: linear-gradient(160deg, #ffffff 0%, #f1f5ed 100%);
     border-left: 1px solid var(--glass-border);
-    box-shadow: -16px 0 50px rgba(0, 0, 0, 0.6);
+    box-shadow: -16px 0 50px rgba(32, 48, 36, 0.22);
     transform: translateX(100%);
     transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 1rem 1.25rem calc(1.25rem + var(--safe-bottom));
@@ -355,9 +386,20 @@
     border-bottom: 1px solid var(--glass-border);
   }
 
+  .drawer__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
   .drawer__logo {
+    width: 42px;
     height: 42px;
-    width: auto;
+    object-fit: contain;
   }
 
   .drawer__close {
@@ -418,7 +460,7 @@
   .drawer__link:hover,
   .drawer__link:active {
     background: var(--glass-bg-hover);
-    color: #fff;
+    color: var(--accent);
   }
 
   .drawer__link--cta {
@@ -444,6 +486,10 @@
   }
 
   @media screen and (max-width: 768px) {
+    .header__logo-copy small {
+      display: none;
+    }
+
     .header__links {
       display: none;
     }

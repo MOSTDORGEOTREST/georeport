@@ -518,8 +518,8 @@
         'key remove'
         'value remove';
       gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: var(--surface-soft);
+      border: 1px solid var(--line-soft);
       border-radius: var(--radius-sm);
       padding: 0.6rem;
     }

@@ -265,7 +265,7 @@
     border-radius: var(--radius-md);
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--glass-border);
+    box-shadow: 0 24px 60px rgba(39, 57, 42, 0.16), 0 0 0 1px var(--glass-border);
   }
 
   .home-img::before {

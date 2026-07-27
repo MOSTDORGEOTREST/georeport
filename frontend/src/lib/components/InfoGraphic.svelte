@@ -80,7 +80,7 @@
     justify-content: center;
     font-weight: 700;
     font-size: 0.95rem;
-    background: rgba(10, 31, 10, 0.6);
+    background: var(--surface-elevated);
     flex-shrink: 0;
   }
 

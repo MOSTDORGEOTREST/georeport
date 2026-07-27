@@ -373,7 +373,7 @@
   .stat__bar {
     height: 8px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--line-soft);
     overflow: hidden;
   }
 

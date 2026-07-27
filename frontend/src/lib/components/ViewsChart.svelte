@@ -60,8 +60,8 @@
             fill: true,
             cubicInterpolationMode: 'monotone',
             tension: 0.4,
-            pointBackgroundColor: '#a8c46a',
-            pointBorderColor: 'rgba(10, 31, 10, 0.8)',
+            pointBackgroundColor: '#668b37',
+            pointBorderColor: 'rgba(255,255,255,0.95)',
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 7,
@@ -75,10 +75,10 @@
             legend: { display: false },
             title: { display: false },
             tooltip: {
-              backgroundColor: 'rgba(10, 31, 10, 0.92)',
-              titleColor: 'rgba(255,255,255,0.9)',
-              bodyColor: 'rgba(255,255,255,0.7)',
-              borderColor: 'rgba(255,255,255,0.12)',
+              backgroundColor: 'rgba(28,43,33,0.94)',
+              titleColor: 'rgba(255,255,255,0.96)',
+              bodyColor: 'rgba(255,255,255,0.82)',
+              borderColor: 'rgba(255,255,255,0.18)',
               borderWidth: 1,
               padding: 10,
               cornerRadius: 8,
@@ -89,24 +89,24 @@
           scales: {
             x: {
               ticks: {
-                color: 'rgba(255,255,255,0.5)',
+                color: 'rgba(52,72,58,0.62)',
                 font: { size: 11, family: 'Quicksand' },
                 maxRotation: 40,
               },
               grid: {
-                color: 'rgba(255,255,255,0.05)',
+                color: 'rgba(52,72,58,0.09)',
               }
             },
             y: {
               suggestedMin: 0,
               suggestedMax: maxVal,
               ticks: {
-                color: 'rgba(255,255,255,0.5)',
+                color: 'rgba(52,72,58,0.62)',
                 font: { size: 11, family: 'Quicksand' },
                 precision: 0,
               },
               grid: {
-                color: 'rgba(255,255,255,0.05)',
+                color: 'rgba(52,72,58,0.09)',
               }
             }
           }

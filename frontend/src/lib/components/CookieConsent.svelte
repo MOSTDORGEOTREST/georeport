@@ -62,7 +62,7 @@
     z-index: 150; /* ниже мобильного меню (200) и модалок */
     max-width: 640px;
     margin: 0 auto;
-    background: rgba(12, 28, 14, 0.92);
+    background: rgba(255, 255, 255, 0.96);
     animation: slideUp 0.4s ease-out;
   }
 

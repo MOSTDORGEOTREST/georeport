@@ -4,10 +4,12 @@
       <div class="footer__brand">
         <a href="https://mdgt.ru/" target="_blank" rel="noreferrer" class="footer__logo-link" aria-label="Сайт МДГТ">
           <img src="/images/mdgt.png" alt="МДГТ" class="footer__logo-img" />
+          <span class="footer__brand-copy">
+            <strong>МОСТДОРГЕОТРЕСТ</strong>
+            <small>Геотехническая лаборатория</small>
+          </span>
         </a>
-        <p class="footer__dev">
-          Разработано геотехнической лабораторией Мостдоргеотрест
-        </p>
+        <p class="footer__dev">Разработано специалистами лаборатории МДГТ</p>
       </div>
 
       <div class="footer__col">
@@ -56,7 +58,7 @@
   .footer {
     flex: 0 0 auto;
     margin-top: 4rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.58);
     border-top: 1px solid var(--glass-border);
     padding-bottom: var(--safe-bottom);
   }
@@ -82,10 +84,18 @@
     align-items: flex-start;
   }
 
+  .footer__logo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--text-primary);
+  }
+
   .footer__logo-img {
-    width: 44px;
-    height: 44px;
-    opacity: 0.75;
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    opacity: 0.92;
     transition: var(--transition);
   }
 
@@ -93,8 +103,26 @@
     opacity: 1;
   }
 
+  .footer__brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .footer__brand-copy strong {
+    font-size: 0.86rem;
+    letter-spacing: 0.08em;
+  }
+
+  .footer__brand-copy small {
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+
   .footer__dev {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--text-muted);

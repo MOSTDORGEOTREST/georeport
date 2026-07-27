@@ -256,7 +256,7 @@
     gap: 1rem;
     padding: 1.4rem 1.5rem;
     border-bottom: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-soft);
   }
 
   .report__header-icon {
@@ -302,12 +302,12 @@
 
   .report__table td {
     padding: 0.65rem 1.25rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--line-soft);
     color: var(--text-primary);
   }
 
   .report__table tr:nth-child(even) td {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface-soft);
   }
 
   .report__table tr:last-child td {
@@ -318,7 +318,7 @@
     color: var(--text-muted);
     font-weight: 600;
     white-space: nowrap;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid var(--line-soft);
     width: 42%;
   }
 
@@ -342,7 +342,7 @@
 
   .report__file {
     padding: 0.5rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--line-soft);
   }
 
   .report__file:last-child {

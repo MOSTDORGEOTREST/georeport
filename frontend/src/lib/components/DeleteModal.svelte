@@ -38,7 +38,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--overlay);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     animation: fadeIn 0.2s ease-out;
@@ -54,7 +54,7 @@
     align-items: center;
     text-align: center;
     gap: 0.75rem;
-    background: rgba(12, 28, 14, 0.97);
+    background: var(--surface-elevated);
     animation: scaleIn 0.25s ease-out;
   }
 

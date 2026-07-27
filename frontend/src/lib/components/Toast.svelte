@@ -43,7 +43,7 @@
     gap: 0.6rem;
     padding: 0.75rem 0.9rem;
     animation: slideUp 0.3s ease-out;
-    background: rgba(12, 28, 14, 0.95);
+    background: var(--surface-elevated);
     border-left: 3px solid var(--glass-border-hover);
   }
 
