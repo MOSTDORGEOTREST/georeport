@@ -43,6 +43,16 @@
     } catch {}
   }
 
+  function formatDateTime(dt) {
+    if (!dt) return '';
+    const d = new Date(dt);
+    if (isNaN(d)) return dt;
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    }).format(d);
+  }
+
   function downloadBlob(blob, filename) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -70,16 +80,30 @@
   }
 </script>
 
+<svelte:head>
+  <title>Протокол — GEOREPORT</title>
+</svelte:head>
+
 {#if loading}
   <Loader />
 {:else if report}
   <div class="report">
-    <div class="report__card glass fade-in">
+    <div class="report__verified fade-in" role="status">
+      <i class="ri-shield-check-fill" aria-hidden="true"></i>
+      <div class="report__verified-text">
+        <strong>Протокол подтверждён</strong>
+        <span>Данные зарегистрированы на сервере GEOREPORT и защищены от изменений</span>
+      </div>
+    </div>
+
+    <div class="report__card glass fade-in" style="animation-delay: 0.1s">
       <div class="report__header">
-        <img src="/images/lock.gif" alt="lock" class="report__header-icon" />
+        <div class="report__header-icon" aria-hidden="true">
+          <i class="ri-flask-line"></i>
+        </div>
         <div class="report__header-info">
-          <h2 class="report__header-title">МОСТДОРГЕОТРЕСТ</h2>
-          <a href="https://mdgt.ru/" target="_blank" class="report__header-url">mdgt.ru</a>
+          <h1 class="report__header-title">МОСТДОРГЕОТРЕСТ</h1>
+          <a href="https://mdgt.ru/" target="_blank" rel="noreferrer" class="report__header-url">mdgt.ru</a>
         </div>
       </div>
 
@@ -95,7 +119,7 @@
           </tr>
           <tr>
             <td class="report__label">Дата выдачи протокола</td>
-            <td>{new Date(report.datetime).toLocaleString()}</td>
+            <td>{formatDateTime(report.datetime)}</td>
           </tr>
           <tr>
             <td class="report__label">Тип опыта</td>
@@ -112,20 +136,24 @@
     </div>
 
     {#if additional && additional.length > 0}
-      <div class="report__card glass fade-in" style="animation-delay: 0.15s">
-        <h3 class="report__section-title">Дополнительные файлы</h3>
+      <div class="report__card glass fade-in" style="animation-delay: 0.2s">
+        <h2 class="report__section-title">
+          <i class="ri-attachment-2" aria-hidden="true"></i>
+          Дополнительные файлы
+        </h2>
         <div class="report__files">
           {#each additional as file}
             <div class="report__file">
-              <a
-                href="#download"
+              <button
+                type="button"
                 class="report__file-link"
-                onclick={(e) => { e.preventDefault(); downloadFile(file.link, file.filename); }}
+                onclick={() => downloadFile(file.link, file.filename)}
               >
+                <i class="ri-download-2-line" aria-hidden="true"></i>
                 {file.filename}
-              </a>
+              </button>
               {#if isImage(file.filename)}
-                <img src="/s3/?key={file.link}" alt="" class="report__file-preview" />
+                <img src="/s3/?key={file.link}" alt="" class="report__file-preview" loading="lazy" />
               {/if}
             </div>
           {/each}
@@ -135,29 +163,41 @@
 
     {#if notes && notes.length > 0}
       <div class="report__card glass fade-in" style="animation-delay: 0.3s">
-        <h3 class="report__section-title">Справочные файлы</h3>
+        <h2 class="report__section-title">
+          <i class="ri-book-open-line" aria-hidden="true"></i>
+          Справочные файлы
+        </h2>
         <div class="report__files">
           {#each notes as file}
             <div class="report__file">
-              <a
-                href="#download"
+              <button
+                type="button"
                 class="report__file-link"
-                onclick={(e) => { e.preventDefault(); downloadFile(file.link, file.filename); }}
+                onclick={() => downloadFile(file.link, file.filename)}
               >
+                <i class="ri-download-2-line" aria-hidden="true"></i>
                 {file.filename}
-              </a>
+              </button>
               {#if isImage(file.filename)}
-                <img src="/s3/?key={file.link}" alt="" class="report__file-preview" />
+                <img src="/s3/?key={file.link}" alt="" class="report__file-preview" loading="lazy" />
               {/if}
             </div>
           {/each}
         </div>
       </div>
     {/if}
+
+    <p class="report__footer-note fade-in" style="animation-delay: 0.35s">
+      <i class="ri-qr-code-line" aria-hidden="true"></i>
+      Проверено через сервис GEOREPORT
+    </p>
   </div>
 {:else}
   <div class="report__empty glass fade-in">
-    <p>Данные по отчету не найдены.</p>
+    <i class="ri-file-damage-line" aria-hidden="true"></i>
+    <h1 class="report__empty-title">Протокол не найден</h1>
+    <p>Данные по этому отчёту отсутствуют на сервере. Проверьте корректность QR-кода.</p>
+    <a href="/" class="btn btn-glass report__empty-btn">На главную</a>
   </div>
 {/if}
 
@@ -165,10 +205,43 @@
   .report {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
     width: 100%;
     max-width: 700px;
     margin: 0 auto;
+  }
+
+  .report__verified {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+    border: 1px solid rgba(143, 168, 84, 0.45);
+  }
+
+  .report__verified i {
+    font-size: 1.9rem;
+    color: var(--accent-bright);
+    flex-shrink: 0;
+  }
+
+  .report__verified-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .report__verified-text strong {
+    color: var(--text-primary);
+    font-size: 0.98rem;
+  }
+
+  .report__verified-text span {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.45;
   }
 
   .report__card {
@@ -181,33 +254,40 @@
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    padding: 1.25rem 1.5rem;
+    padding: 1.4rem 1.5rem;
     border-bottom: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .report__header-icon {
-    width: 60px;
-    height: 60px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-soft);
+    border: 1px solid rgba(143, 168, 84, 0.4);
+    color: var(--accent-bright);
+    font-size: 1.6rem;
+    flex-shrink: 0;
   }
 
   .report__header-info {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
   }
 
   .report__header-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     color: var(--text-primary);
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 0.2rem;
+    letter-spacing: 0.04em;
   }
 
   .report__header-url {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    margin-top: 0.2rem;
   }
 
   .report__header-url:hover {
@@ -221,9 +301,13 @@
   }
 
   .report__table td {
-    padding: 0.6rem 1rem;
+    padding: 0.65rem 1.25rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    color: var(--text-secondary);
+    color: var(--text-primary);
+  }
+
+  .report__table tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.02);
   }
 
   .report__table tr:last-child td {
@@ -235,14 +319,21 @@
     font-weight: 600;
     white-space: nowrap;
     border-right: 1px solid rgba(255, 255, 255, 0.06);
-    width: 40%;
+    width: 42%;
   }
 
   .report__section-title {
     font-size: 1rem;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--glass-border);
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .report__section-title i {
+    color: var(--accent-light);
   }
 
   .report__files {
@@ -259,13 +350,30 @@
   }
 
   .report__file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
     color: var(--text-secondary);
-    text-decoration: underline;
+    font-family: inherit;
     font-size: 0.9rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 0.4rem 0;
+    min-height: 40px;
+    transition: var(--transition);
+    text-align: left;
+  }
+
+  .report__file-link i {
+    color: var(--accent-light);
+    font-size: 1.05rem;
   }
 
   .report__file-link:hover {
-    color: var(--accent-light);
+    color: var(--accent-bright);
   }
 
   .report__file-preview {
@@ -276,22 +384,62 @@
     border-radius: var(--radius-sm);
   }
 
-  .report__empty {
-    padding: 3rem;
-    text-align: center;
+  .report__footer-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--text-muted);
+  }
+
+  .report__footer-note i {
+    color: var(--accent-light);
+    font-size: 1rem;
+  }
+
+  .report__empty {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin: 2rem auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .report__empty i {
+    font-size: 2.6rem;
+    color: var(--text-muted);
+  }
+
+  .report__empty-title {
+    font-size: 1.25rem;
+  }
+
+  .report__empty-btn {
+    margin-top: 0.5rem;
+    text-decoration: none;
   }
 
   @media screen and (max-width: 500px) {
     .report__header {
       flex-direction: column;
       text-align: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
+      padding: 1.25rem 1rem;
     }
 
-    .report__header-icon {
-      width: 45px;
-      height: 45px;
+    .report__header-info {
+      align-items: center;
+    }
+
+    .report__table td {
+      padding: 0.6rem 1rem;
     }
 
     .report__label {

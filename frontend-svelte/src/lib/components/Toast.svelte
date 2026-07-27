@@ -3,15 +3,22 @@
 
   let items = $state([]);
   toasts.subscribe(v => items = v);
+
+  const icons = {
+    success: 'ri-checkbox-circle-line',
+    error: 'ri-error-warning-line',
+    info: 'ri-information-line'
+  };
 </script>
 
 {#if items.length > 0}
   <div class="toast-container">
     {#each items as toast (toast.id)}
       <div class="toast glass toast--{toast.type}" role="alert">
+        <i class="toast__icon {icons[toast.type] || icons.info}" aria-hidden="true"></i>
         <span class="toast__text">{toast.message}</span>
-        <button class="toast__close" onclick={() => removeToast(toast.id)}>
-          <i class="ri-close-line"></i>
+        <button class="toast__close" onclick={() => removeToast(toast.id)} aria-label="Закрыть уведомление">
+          <i class="ri-close-line" aria-hidden="true"></i>
         </button>
       </div>
     {/each}
@@ -33,24 +40,42 @@
   .toast {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
+    gap: 0.6rem;
+    padding: 0.75rem 0.9rem;
     animation: slideUp 0.3s ease-out;
-    background: rgba(10, 31, 10, 0.9);
+    background: rgba(12, 28, 14, 0.95);
+    border-left: 3px solid var(--glass-border-hover);
+  }
+
+  .toast__icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
   }
 
   .toast--success {
-    border-color: var(--accent);
+    border-left-color: var(--accent-light);
+  }
+
+  .toast--success .toast__icon {
+    color: var(--accent-bright);
   }
 
   .toast--error {
-    border-color: var(--danger);
+    border-left-color: var(--danger);
+  }
+
+  .toast--error .toast__icon {
+    color: var(--danger);
+  }
+
+  .toast--info .toast__icon {
+    color: var(--gold);
   }
 
   .toast__text {
     font-size: 0.85rem;
     color: var(--text-primary);
+    flex: 1;
   }
 
   .toast__close {
@@ -60,10 +85,26 @@
     font-size: 1.1rem;
     cursor: pointer;
     padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
     transition: var(--transition);
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .toast__close:hover {
     color: var(--text-primary);
+  }
+
+  @media screen and (max-width: 500px) {
+    .toast-container {
+      left: 1rem;
+      right: 1rem;
+      max-width: none;
+    }
   }
 </style>

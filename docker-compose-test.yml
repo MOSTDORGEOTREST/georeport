@@ -1,12 +1,14 @@
 services:
   backend:
     build: ./backend/
-    command: bash -c 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload'
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       - FILE_COUNT=10
       - FILE_SIZE=1024
       - DATABASE_URL=postgresql+asyncpg://georeport:georeport@postgres:5432/georeport
       - WORK_TYPE=BACKEND
+      - PUBLIC_BASE_URL=http://localhost
+      - SEED_DEMO_DATA=true
       - JWT_SECRET=test-secret-key-change-in-production
       - JWT_ALGORITHM=HS256
       - JWT_EXPIRATION=3600

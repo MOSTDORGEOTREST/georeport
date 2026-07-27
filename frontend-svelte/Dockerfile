@@ -1,17 +1,19 @@
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package.json ./
+RUN corepack enable
 
-RUN npm install
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
 ENV NODE_OPTIONS=--max_old_space_size=512
 ENV GENERATE_SOURCEMAP=false
 
-RUN npm run build
+RUN pnpm run build
 
 FROM nginx:alpine
 

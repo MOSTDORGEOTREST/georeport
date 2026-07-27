@@ -17,7 +17,7 @@ from config import configs
 from models.users import LicenseUpdate
 from modules.exceptions import exception_token, exception_registration_data, exception_user_form
 from db import tables
-from models.users import User, Token, UserCreate, UserUpdate
+from models.users import UserPublic, Token, UserCreate, UserUpdate
 
 __hash__ = lambda obj: id(obj)
 
@@ -46,7 +46,7 @@ class OAuth2PasswordBearerWithCookie(OAuth2):
 oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl='/auth/sign-in/')
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+def get_current_user(token: str = Depends(oauth2_scheme)) -> UserPublic:
     return UsersService.verify_token(token)
 
 
@@ -60,7 +60,7 @@ class UsersService:
         return bcrypt.hash(password)
 
     @classmethod
-    def verify_token(cls, token: str) -> User:
+    def verify_token(cls, token: str) -> UserPublic:
         try:
             payload = jwt.decode(
                 token,
@@ -76,7 +76,7 @@ class UsersService:
         user_data['license_update_date'] = datetime.strptime(user_data['license_update_date'], "%d.%m.%Y").date()
 
         try:
-            user = User.parse_obj(user_data)
+            user = UserPublic.model_validate(user_data)
         except ValidationError:
             raise exception_token from None
 
@@ -84,8 +84,7 @@ class UsersService:
 
     @classmethod
     def create_token(cls, user: tables.Users, exp=None) -> Token:
-        user_data = User.from_orm(user)
-        user_data = user_data.dict()
+        user_data = UserPublic.model_validate(user).model_dump()
         user_data['license_level'] = user_data['license_level'].value
         user_data['license_end_date'] = user_data['license_end_date'].strftime("%d.%m.%Y")
         user_data['license_update_date'] = user_data['license_update_date'].strftime("%d.%m.%Y")
@@ -93,7 +92,7 @@ class UsersService:
         payload = {
             'iat': now,
             'nbf': now,
-            'exp': now + timedelta(hours=configs.jwt_expiration) if not exp else exp,
+            'exp': now + timedelta(seconds=configs.jwt_expiration) if not exp else exp,
             'sub': str(user_data['id']),
             'user': user_data,
         }
@@ -235,4 +234,3 @@ class UsersService:
         await self.session.execute(q)
 
         return license_data
-

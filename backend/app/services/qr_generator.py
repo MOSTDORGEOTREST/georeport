@@ -1,6 +1,5 @@
 import qrcode
 from PIL import Image, ImageDraw
-from pyzbar.pyzbar import decode
 from path import Path
 from io import BytesIO
 
@@ -8,6 +7,7 @@ from io import BytesIO
 # Путь до картинки с QR кодом
 def read_qr_code(path_to_download: Path):
     try:
+        from pyzbar.pyzbar import decode
         img = Image.open(path_to_download)
         decoded = decode(img)
         wrote = decoded[0].data.decode("utf-8")

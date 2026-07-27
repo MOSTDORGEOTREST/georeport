@@ -10,7 +10,12 @@ router = APIRouter(
     prefix="/s3",
     tags=['s3'])
 
-file_key_pattern = r'georeport/files/[a-f0-9]{40}-.*'
+file_key_pattern = (
+    r'georeport/(?:'
+    r'files/[a-f0-9]{40}-[^/]+'
+    r'|test_type_files/\d+-[^/]+'
+    r')'
+)
 
 @router.get("/")
 async def get(

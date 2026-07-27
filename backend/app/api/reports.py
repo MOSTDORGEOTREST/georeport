@@ -31,6 +31,11 @@ async def get_report(
 ):
     """Просмотр данных отчета по id"""
     report = await service.get(id)
+    if not report.active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Report not found",
+        )
 
     if id != '4c795fb5002852b5af5df9e5de1e44b11b920d6f':
         await stat_service.create(client_ip=request.headers.get("X-Real-IP") or request.client.host, report_id=id)
@@ -137,10 +142,10 @@ async def delete_report(
     # Удаление статистики
     await statistics_service.delete(report_id=id)
 
-    await service.delete(id=id)
-
     # Удаление всех связанных файлов из таблицы в БД
     files = await service.delete_files(report_id=id)
+
+    await service.delete(id=id)
 
     # Удаление файлов из S3 в рамках одной транзакции
     for file in files:
@@ -165,20 +170,25 @@ async def get_objects(
     """Просмотр всех объектов пользователя"""
     return await service.get_objects(user_id=user.id)
 
-@router.post("/objects/{object_number}/{activate}/")
+@router.post("/objects/{object_number}/{active}/")
 async def activate_deactivate_object(
         object_number: str, active: bool,
         user: User = Depends(get_current_user),
         service: ReportsService = Depends(get_report_service)
 ):
     """Активация и деактивация объекта"""
-    reports = await service.get_object(user_id=user.id, object_number=object_number, is_superuser=user.is_superuser)
-    if reports:
-        for report in reports:
-            report.active = active
-
-        await service.update_many(id=report.id, reports=reports)
-    return {"massage": f"{len(reports)} reports from object {object_number} is {'activate' if active else 'deactivate'}"}
+    updated = await service.set_object_active(
+        user_id=user.id,
+        object_number=object_number,
+        active=active,
+        is_superuser=user.is_superuser,
+    )
+    return {
+        "message": (
+            f"{updated} reports from object {object_number} "
+            f"{'activated' if active else 'deactivated'}"
+        )
+    }
 
 @router.get("/count/")
 @cache(expire=60)
@@ -189,6 +199,15 @@ async def count(
     return await service.count()
 
 
+@router.get("/my-count/")
+async def my_count(
+        user: User = Depends(get_current_user),
+        service: ReportsService = Depends(get_report_service)
+):
+    """Число протоколов пользователя в текущем лицензионном периоде"""
+    return await service.get_reports_count(user)
+
+
 @router.get("/sample_id/")
 @cache(expire=60)
 async def sample_id(
@@ -197,6 +216,4 @@ async def sample_id(
     """ID первого отчёта для демо на главной (относительная ссылка /report/{id})"""
     report_id = await service.get_first_report_id()
     return {"id": report_id}
-
-
 

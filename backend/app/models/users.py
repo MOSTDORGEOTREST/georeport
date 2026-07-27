@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import date
 from db.tables import LicenseLevel
 
@@ -23,11 +23,15 @@ class UserUpdate(UserCreate):
     pass
 
 class User(BaseUser):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int = Field(..., description="Уникальный идентификатор пользователя.")
     password_hash: str = Field(..., description="Хеш пароля пользователя.")
 
-    class Config:
-        from_attributes = True  # Обеспечивает совместимость с ORM моделями.
+class UserPublic(BaseUser):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int = Field(..., description="Уникальный идентификатор пользователя.")
 
 class LicenseUpdate(BaseModel):
     license_level: LicenseLevel = Field(..., description="Новый уровень лицензии.")

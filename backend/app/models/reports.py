@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional
 
@@ -10,12 +10,11 @@ class ReportBase(BaseModel):
     active: bool = Field(..., description="Статус активности отчета")
 
 class Report(ReportBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str = Field(..., description="Уникальный идентификатор отчета")
     user_id: int = Field(..., description="Идентификатор пользователя, создавшего отчет")
     datetime: datetime
-
-    class Config:
-        from_attributes = True  # Обеспечивает совместимость с ORM моделями.
 
 class ReportCreate(ReportBase):
     """Модель для создания нового отчета."""

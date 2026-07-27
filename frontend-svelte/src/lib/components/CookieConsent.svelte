@@ -34,22 +34,21 @@
 </script>
 
 {#if visible}
-  <div class="cookie glass">
+  <div class="cookie glass" role="region" aria-label="Согласие на использование cookie">
     <div class="cookie__body">
-      <h4 class="cookie__title">Мы используем файлы cookie.</h4>
-      <p class="cookie__text">
-        Мы используем Cookies в том числе с использованием сервиса
-        веб-аналитики «Яндекс.Метрика». Продолжая использовать
-        наш сайт, вы даете
-        <a href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf">согласие</a>
-        на обработку данных Cookies в соответствии с
-        <a href="/static/docs/Политика_на сайт.pdf">Политикой</a>.
-      </p>
-      <div class="cookie__actions">
-        <button class="btn btn-accent" onclick={accept}>
-          Принять
-        </button>
+      <div class="cookie__icon" aria-hidden="true">
+        <i class="ri-cake-line"></i>
       </div>
+      <p class="cookie__text">
+        Мы используем Cookies, в том числе сервис веб-аналитики
+        «Яндекс.Метрика». Продолжая использовать сайт, вы даёте
+        <a href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf" target="_blank" rel="noreferrer">согласие</a>
+        на обработку данных в соответствии с
+        <a href="/static/docs/Политика_на сайт.pdf" target="_blank" rel="noreferrer">Политикой</a>.
+      </p>
+      <button class="btn btn-accent cookie__btn" onclick={accept}>
+        Принять
+      </button>
     </div>
   </div>
 {/if}
@@ -57,46 +56,73 @@
 <style>
   .cookie {
     position: fixed;
-    bottom: 1.5rem;
-    left: 1.5rem;
-    right: 1.5rem;
-    z-index: 1000;
-    max-width: 600px;
+    bottom: calc(1rem + var(--safe-bottom));
+    left: 1rem;
+    right: 1rem;
+    z-index: 150; /* ниже мобильного меню (200) и модалок */
+    max-width: 640px;
     margin: 0 auto;
-    background: rgba(10, 31, 10, 0.85);
+    background: rgba(12, 28, 14, 0.92);
     animation: slideUp 0.4s ease-out;
   }
 
   .cookie__body {
-    padding: 1.5rem;
+    padding: 0.9rem 1.1rem;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 0.9rem;
   }
 
-  .cookie__title {
-    font-size: 1rem;
-    color: var(--text-primary);
+  .cookie__icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 1.2rem;
   }
 
   .cookie__text {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     line-height: 1.5;
+    flex: 1;
   }
 
   .cookie__text a {
     color: var(--accent-light);
     text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
-  .cookie__actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-
-  .cookie__actions .btn {
+  .cookie__btn {
     padding: 0.5rem 1.25rem;
     font-size: 0.85rem;
+    min-height: 40px;
+    white-space: nowrap;
+  }
+
+  @media screen and (max-width: 600px) {
+    .cookie {
+      left: 0.6rem;
+      right: 0.6rem;
+    }
+
+    .cookie__body {
+      flex-wrap: wrap;
+      padding: 0.9rem;
+    }
+
+    .cookie__text {
+      flex-basis: calc(100% - 3.2rem);
+    }
+
+    .cookie__btn {
+      width: 100%;
+    }
   }
 </style>

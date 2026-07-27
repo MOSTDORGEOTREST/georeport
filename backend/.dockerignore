@@ -1,4 +1,5 @@
-../venv
+.venv
+tests
 .git
 .cache
 **/.idea

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status, UploadFile
 from typing import Optional, List
-import sys
 
 from models.files import TestTypeFile, TestTypeFileCreate
 from models.users import User, LicenseLevel
@@ -8,7 +7,7 @@ from services.users import get_current_user
 from services.depends import get_report_service, get_s3_service
 from services.reports import ReportsService
 from services.s3 import S3Service
-from modules.exceptions import exception_right, exception_file_count, exception_file_size
+from modules.exceptions import exception_right, exception_file_count, exception_file_size, exception_not_found
 
 router = APIRouter(
     prefix="/test_type_files",
@@ -25,7 +24,7 @@ async def upload_test_type_file(
     """Добавление файла"""
 
     contents = await file.read()
-    if sys.getsizeof(contents) / (1024 * 1024) > 100:
+    if len(contents) / (1024 * 1024) > 100:
         raise exception_file_size
 
     format = file.filename.split(".")[-1].lower()
@@ -45,6 +44,8 @@ async def get_test_type_files(
 ):
     """Просмотр отчетов по объекту"""
     report = await service.get(report_id)
+    if not report.active:
+        raise exception_not_found
     return await service.get_test_type_files(test_type=report.test_type, user_id=report.user_id)
 
 

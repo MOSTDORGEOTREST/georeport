@@ -2,9 +2,7 @@ import os.path
 import datetime
 from typing import List, Optional
 import asyncio
-import concurrent
 import humanize
-import functools
 from sqlalchemy.future import select
 from sqlalchemy import update, delete, func
 from sqlalchemy.sql.expression import func as expression_func
@@ -15,6 +13,7 @@ from models.reports import Report, ReportCreate, ReportUpdate
 from services.qr_generator import gen_qr_code
 import db.tables as tables
 from modules.exceptions import exception_not_found
+from config import configs
 
 # Активация локализации для humanize
 _t = humanize.i18n.activate("ru_RU")
@@ -74,6 +73,7 @@ class ReportsService:
         """ID первого отчёта для демо на главной (относительная ссылка)"""
         result = await self.session.execute(
             select(tables.Reports.id)
+            .filter_by(active=True)
             .order_by(tables.Reports.datetime.desc())
             .limit(1)
         )
@@ -113,6 +113,25 @@ class ReportsService:
 
         return reports
 
+    async def set_object_active(
+            self,
+            user_id: int,
+            object_number: str,
+            active: bool,
+            is_superuser: bool = False,
+    ) -> int:
+        """Изменение активности всех доступных пользователю отчётов объекта"""
+        query = (
+            update(tables.Reports)
+            .where(tables.Reports.object_number == object_number)
+            .values(active=active)
+        )
+        if not is_superuser:
+            query = query.where(tables.Reports.user_id == user_id)
+
+        result = await self.session.execute(query)
+        return result.rowcount
+
     async def get_reports_count(self, user) -> dict:
         """Получение количества отчетов после обновления лицензии пользователя"""
         license_update_datetime = datetime.datetime(
@@ -149,10 +168,7 @@ class ReportsService:
         query.execution_options(synchronize_session="fetch")
         await self.session.execute(query)
 
-        return ReportUpdate(
-            datetime=datetime.datetime.now(),
-            **report_data.dict()
-        )
+        return ReportUpdate(**report_data.model_dump())
 
     async def delete(self, id: str):
         """Удаление отчета по ID и связанных данных"""
@@ -163,7 +179,7 @@ class ReportsService:
     async def create(self, user_id: int, report_id: str, report_data: ReportCreate) -> tables.Reports:
         """Создание нового отчета"""
         update_query = insert(tables.Reports).values(
-            **report_data.dict(),
+            **report_data.model_dump(),
             id=report_id,
             datetime=datetime.datetime.now(),
             user_id=user_id)
@@ -176,19 +192,17 @@ class ReportsService:
         await self.session.execute(update_query)
 
         return tables.Reports(
-            **report_data.dict(),
+            **report_data.model_dump(),
             id=report_id,
             datetime=datetime.datetime.now(),
             user_id=user_id)
 
     async def create_qr(self, id: str):
         """Создание QR-кода для отчета"""
-        text = f"https://georeport.ru/reports/?id={id}"
+        text = f"{configs.public_base_url}/report/{id}"
         path_to_download = os.path.join("services", "digitrock_qr.png")  # Путь до фона qr кода
 
-        loop = asyncio.get_event_loop()
-        with concurrent.futures.ProcessPoolExecutor() as pool:
-            return await loop.run_in_executor(pool, functools.partial(gen_qr_code, text, path_to_download))
+        return await asyncio.to_thread(gen_qr_code, text, path_to_download)
 
     async def get_files(self, report_id: str) -> Optional[tables.Files]:
         """Получение файлов по ID отчета"""
@@ -295,4 +309,3 @@ class ReportsService:
         await self.session.execute(delete_query)
 
         return files
-

@@ -70,6 +70,13 @@
     objectSearchQuery = '';
   }
 
+  function formatDate(dt) {
+    if (!dt) return '';
+    const d = new Date(dt);
+    if (isNaN(d)) return dt.split('T')[0] || '';
+    return new Intl.DateTimeFormat('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+  }
+
   onMount(() => {
     const handleClickOutside = (e) => {
       if (showDropdown && dropdownWrapper && !dropdownWrapper.contains(e.target)) {
@@ -87,7 +94,6 @@
     };
   });
 
-
   function downloadBlob(blob, filename) {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -98,13 +104,26 @@
 
   async function downloadQr(report) {
     try {
-      const res = await post(`/reports/qr?id=${report.id}`, null, false);
+      const res = await post(`/reports/qr/?id=${encodeURIComponent(report.id)}`, null, false);
       if (res.ok) {
         const blob = await res.blob();
-        downloadBlob(blob, `${report.object_number} - ${report.laboratory_number} - ${report.test_type}`);
+        downloadBlob(blob, `${report.object_number} - ${report.laboratory_number} - ${report.test_type}.png`);
+        addToast('QR-код загружен', 'success');
+      } else {
+        addToast('Ошибка загрузки QR', 'error');
       }
     } catch {
       addToast('Ошибка загрузки QR', 'error');
+    }
+  }
+
+  function handleUpdate(report) {
+    onUpdateReport?.(report);
+    // Плавно подводим к форме редактирования
+    const form = document.querySelector('#report-form');
+    if (form) {
+      const top = form.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
   }
 
@@ -116,9 +135,14 @@
   async function handleDelete() {
     if (!deleteId) return;
     try {
-      await del(`/reports/?id=${deleteId}`);
+      const res = await del(`/reports/?id=${encodeURIComponent(deleteId)}`);
+      if (!res.ok) {
+        addToast('Не удалось удалить протокол', 'error');
+        return;
+      }
       showDeleteModal = false;
       deleteId = null;
+      addToast('Протокол удалён', 'success');
       onfetchObjects?.();
     } catch {
       addToast('Ошибка удаления', 'error');
@@ -126,40 +150,60 @@
   }
 </script>
 
-<section class="reports-section">
-  <h2 class="reports-title">Выданные протоколы</h2>
+<section class="reports-section glass">
+  <div class="reports-head">
+    <h2 class="reports-title">
+      <i class="ri-archive-stack-line" aria-hidden="true"></i>
+      Выданные протоколы
+      {#if filteredData.length > 0}
+        <span class="reports-count">{filteredData.length}</span>
+      {/if}
+    </h2>
 
-  <div class="dropdown-wrapper" bind:this={dropdownWrapper}>
-    <button class="btn btn-glass dropdown-btn" onclick={() => showDropdown = !showDropdown}>
-      {selectedObj || 'Все объекты'}
-      <i class="ri-arrow-down-s-line"></i>
-    </button>
-    {#if showDropdown}
-      <div class="dropdown-menu glass">
-        {#if objects.length > 10}
-          <div class="dropdown-search">
-            <input
-              type="text"
-              class="input-glass dropdown-search__input"
-              placeholder="Поиск объекта..."
-              bind:value={objectSearchQuery}
-              onkeydown={(e) => e.stopPropagation()}
-            />
-          </div>
-        {/if}
-        <div class="dropdown-list">
-          <button class="dropdown-item" onclick={() => selectObject(null)}>Все объекты</button>
-          {#each filteredObjects as obj}
-            <button class="dropdown-item" onclick={() => selectObject(obj)}>{obj}</button>
-          {/each}
-          {#if objects.length > 10 && filteredObjects.length === 0}
-            <div class="dropdown-item dropdown-item--empty">Ничего не найдено</div>
+    <div class="dropdown-wrapper" bind:this={dropdownWrapper}>
+      <button
+        class="btn btn-glass dropdown-btn"
+        class:dropdown-btn--active={selectedObj}
+        onclick={() => showDropdown = !showDropdown}
+        aria-haspopup="listbox"
+        aria-expanded={showDropdown}
+      >
+        <i class="ri-filter-3-line" aria-hidden="true"></i>
+        {selectedObj || 'Все объекты'}
+        <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+      </button>
+      {#if showDropdown}
+        <div class="dropdown-menu glass">
+          {#if objects.length > 10}
+            <div class="dropdown-search">
+              <input
+                type="text"
+                class="input-glass dropdown-search__input"
+                placeholder="Поиск объекта..."
+                bind:value={objectSearchQuery}
+                onkeydown={(e) => e.stopPropagation()}
+              />
+            </div>
           {/if}
+          <div class="dropdown-list" role="listbox">
+            <button class="dropdown-item" class:dropdown-item--selected={!selectedObj} onclick={() => selectObject(null)}>
+              Все объекты
+            </button>
+            {#each filteredObjects as obj}
+              <button class="dropdown-item" class:dropdown-item--selected={selectedObj === obj} onclick={() => selectObject(obj)}>
+                {obj}
+              </button>
+            {/each}
+            {#if objects.length > 10 && filteredObjects.length === 0}
+              <div class="dropdown-item dropdown-item--empty">Ничего не найдено</div>
+            {/if}
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
 
+  <!-- Таблица (десктоп) -->
   <div class="table-wrapper">
     <table class="table">
       <thead>
@@ -169,54 +213,106 @@
           <th>Лаб. номер</th>
           <th>Тип испытания</th>
           <th>Информация</th>
-          <th>Действия</th>
+          <th class="table__actions-col">Действия</th>
         </tr>
       </thead>
       <tbody>
         {#each pageData as report}
           <tr>
-            <td>{report.datetime?.split('T')[0] || ''}</td>
-            <td>{report.object_number}</td>
+            <td class="table__date">{formatDate(report.datetime)}</td>
+            <td><span class="chip chip--obj">{report.object_number}</span></td>
             <td>{report.laboratory_number}</td>
-            <td>{report.test_type}</td>
+            <td><span class="chip chip--type">{report.test_type}</span></td>
             <td>
               {#each Object.entries(report.data || {}) as [key, val]}
-                <div class="data-row">{key}: {val}</div>
+                <div class="data-row"><span class="data-row__key">{key}:</span> {val}</div>
               {/each}
             </td>
             <td>
               <div class="actions">
                 <button
-                  class="action-btn"
-                  title="Обновить"
-                  onclick={() => onUpdateReport?.(report)}
+                  class="action-btn action-btn--edit"
+                  title="Редактировать"
+                  aria-label="Редактировать протокол {report.laboratory_number}"
+                  onclick={() => handleUpdate(report)}
                 >
-                  <img src="/images/update.png" alt="update" width="24" height="24" />
+                  <i class="ri-edit-2-line" aria-hidden="true"></i>
                 </button>
                 <button
-                  class="action-btn"
-                  title="Удалить"
-                  onclick={() => confirmDelete(report.id)}
-                >
-                  <img src="/images/trash.png" alt="delete" width="24" height="24" />
-                </button>
-                <button
-                  class="action-btn"
+                  class="action-btn action-btn--download"
                   title="Скачать QR"
+                  aria-label="Скачать QR протокола {report.laboratory_number}"
                   onclick={() => downloadQr(report)}
                 >
-                  <img src="/images/download.png" alt="download" width="24" height="24" />
+                  <i class="ri-download-2-line" aria-hidden="true"></i>
+                </button>
+                <button
+                  class="action-btn action-btn--delete"
+                  title="Удалить"
+                  aria-label="Удалить протокол {report.laboratory_number}"
+                  onclick={() => confirmDelete(report.id)}
+                >
+                  <i class="ri-delete-bin-6-line" aria-hidden="true"></i>
                 </button>
               </div>
             </td>
           </tr>
         {/each}
-        {#if pageData.length === 0}
-          <tr><td colspan="6" class="empty">Нет данных</td></tr>
-        {/if}
       </tbody>
     </table>
   </div>
+
+  <!-- Карточки (мобильный) -->
+  <div class="cards">
+    {#each pageData as report}
+      <article class="card">
+        <div class="card__top">
+          <div class="card__ids">
+            <span class="chip chip--obj">{report.object_number}</span>
+            <span class="card__lab">{report.laboratory_number}</span>
+            <span class="chip chip--type">{report.test_type}</span>
+          </div>
+          <span class="card__date">
+            <i class="ri-calendar-line" aria-hidden="true"></i>
+            {formatDate(report.datetime)}
+          </span>
+        </div>
+
+        {#if Object.keys(report.data || {}).length > 0}
+          <div class="card__data">
+            {#each Object.entries(report.data || {}) as [key, val]}
+              <div class="data-row"><span class="data-row__key">{key}:</span> {val}</div>
+            {/each}
+          </div>
+        {/if}
+
+        <div class="card__actions">
+          <button class="card-btn" onclick={() => handleUpdate(report)}>
+            <i class="ri-edit-2-line" aria-hidden="true"></i>
+            Изменить
+          </button>
+          <button class="card-btn" onclick={() => downloadQr(report)}>
+            <i class="ri-download-2-line" aria-hidden="true"></i>
+            QR
+          </button>
+          <button class="card-btn card-btn--danger" onclick={() => confirmDelete(report.id)}>
+            <i class="ri-delete-bin-6-line" aria-hidden="true"></i>
+            Удалить
+          </button>
+        </div>
+      </article>
+    {/each}
+  </div>
+
+  {#if pageData.length === 0}
+    <div class="empty">
+      <i class="ri-inbox-2-line" aria-hidden="true"></i>
+      <p>{selectedObj ? 'По этому объекту протоколов нет' : 'Протоколов пока нет'}</p>
+      {#if selectedObj}
+        <button class="empty__reset" onclick={() => selectObject(null)}>Сбросить фильтр</button>
+      {/if}
+    </div>
+  {/if}
 
   {#if totalPages > 1}
     <div class="pagination">
@@ -224,17 +320,17 @@
         class="page-btn page-btn--nav"
         disabled={page === 0}
         onclick={() => page = 0}
-        title="Первая"
+        aria-label="Первая страница"
       >
-        ‹‹
+        <i class="ri-skip-left-line" aria-hidden="true"></i>
       </button>
       <button
         class="page-btn page-btn--nav"
         disabled={page === 0}
         onclick={() => page = Math.max(0, page - 1)}
-        title="Назад"
+        aria-label="Предыдущая страница"
       >
-        ‹
+        <i class="ri-arrow-left-s-line" aria-hidden="true"></i>
       </button>
       <div class="pagination__pages">
         {#each getPageNumbers() as num}
@@ -255,17 +351,17 @@
         class="page-btn page-btn--nav"
         disabled={page >= totalPages - 1}
         onclick={() => page = Math.min(totalPages - 1, page + 1)}
-        title="Вперёд"
+        aria-label="Следующая страница"
       >
-        ›
+        <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
       </button>
       <button
         class="page-btn page-btn--nav"
         disabled={page >= totalPages - 1}
         onclick={() => page = totalPages - 1}
-        title="Последняя"
+        aria-label="Последняя страница"
       >
-        ››
+        <i class="ri-skip-right-line" aria-hidden="true"></i>
       </button>
       <span class="pagination__info">
         {filteredData.length === 0
@@ -286,18 +382,48 @@
 <style>
   .reports-section {
     width: 100%;
+    padding: 1.5rem;
+  }
+
+  .reports-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
   }
 
   .reports-title {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    text-align: center;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .reports-title i {
+    color: var(--accent-light);
+    font-size: 1.25rem;
+  }
+
+  .reports-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(143, 168, 84, 0.4);
+    color: var(--accent-bright);
+    font-size: 0.78rem;
+    font-weight: 700;
   }
 
   .dropdown-wrapper {
     position: relative;
     display: inline-block;
-    margin-bottom: 1rem;
   }
 
   .dropdown-btn {
@@ -306,12 +432,18 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+    min-height: 40px;
+  }
+
+  .dropdown-btn--active {
+    border-color: var(--accent-light);
+    color: var(--accent-bright);
   }
 
   .dropdown-menu {
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: calc(100% + 6px);
+    right: 0;
     z-index: 50;
     min-width: 220px;
     max-width: 320px;
@@ -319,8 +451,10 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    background: rgba(10, 31, 10, 0.95);
+    background: rgba(12, 28, 14, 0.97);
     overflow: hidden;
+    animation: scaleIn 0.18s ease-out;
+    transform-origin: top right;
   }
 
   .dropdown-search {
@@ -333,6 +467,7 @@
     width: 100%;
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
+    min-height: 40px;
   }
 
   .dropdown-list {
@@ -345,17 +480,25 @@
     background: none;
     border: none;
     color: var(--text-secondary);
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
+    min-height: 42px;
     text-align: left;
     font-family: inherit;
     font-size: 0.85rem;
     cursor: pointer;
     transition: var(--transition);
+    display: block;
+    width: 100%;
   }
 
   .dropdown-item:hover {
     background: var(--glass-bg-hover);
     color: var(--text-primary);
+  }
+
+  .dropdown-item--selected {
+    color: var(--accent-bright);
+    font-weight: 700;
   }
 
   .dropdown-item--empty {
@@ -383,9 +526,9 @@
   .table th {
     color: var(--text-muted);
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     padding: 0.75rem;
     border-bottom: 1px solid var(--glass-border);
     text-align: left;
@@ -394,57 +537,215 @@
   }
 
   .table td {
-    padding: 0.6rem 0.75rem;
+    padding: 0.65rem 0.75rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     color: var(--text-secondary);
-    vertical-align: top;
+    vertical-align: middle;
   }
 
   .table tr:hover td {
     background: var(--glass-bg);
   }
 
+  .table__date {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .table__actions-col {
+    text-align: right;
+  }
+
+  .chip {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .chip--obj {
+    background: var(--accent-soft);
+    color: var(--accent-bright);
+    border: 1px solid rgba(143, 168, 84, 0.35);
+  }
+
+  .chip--type {
+    background: var(--gold-soft);
+    color: var(--gold);
+    border: 1px solid rgba(211, 164, 98, 0.35);
+  }
+
   .data-row {
     font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .data-row__key {
     color: var(--text-muted);
   }
 
   .actions {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.3rem;
+    justify-content: flex-end;
   }
 
   .action-btn {
     background: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    padding: 0.25rem;
-    opacity: 0.6;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-muted);
     transition: var(--transition);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .action-btn:hover {
-    opacity: 1;
+  .action-btn--edit:hover {
+    color: var(--accent-bright);
+    background: var(--accent-soft);
+    border-color: rgba(143, 168, 84, 0.35);
+  }
+
+  .action-btn--download:hover {
+    color: var(--gold);
+    background: var(--gold-soft);
+    border-color: rgba(211, 164, 98, 0.35);
+  }
+
+  .action-btn--delete:hover {
+    color: var(--danger);
+    background: var(--danger-soft);
+    border-color: rgba(217, 83, 79, 0.35);
+  }
+
+  /* ── Мобильные карточки ─────────────────────────── */
+  .cards {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .card__ids {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .card__lab {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+  }
+
+  .card__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .card__data {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .card__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .card-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 42px;
+    border-radius: var(--radius-sm);
     background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .action-btn img {
-    filter: brightness(0) invert(1);
-    opacity: 0.7;
+  .card-btn:active {
+    background: var(--glass-bg-hover);
+    transform: scale(0.98);
+  }
+
+  .card-btn--danger {
+    color: var(--danger);
+    border-color: rgba(217, 83, 79, 0.3);
   }
 
   .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
     text-align: center;
     color: var(--text-muted);
-    padding: 2rem !important;
+    padding: 2.5rem 1rem;
+  }
+
+  .empty i {
+    font-size: 2.2rem;
+    opacity: 0.6;
+  }
+
+  .empty__reset {
+    background: none;
+    border: none;
+    color: var(--accent-light);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
   }
 
   .pagination {
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    margin-top: 1rem;
+    margin-top: 1.25rem;
     flex-wrap: wrap;
   }
 
@@ -461,21 +762,28 @@
   }
 
   .pagination__info {
-    margin-left: 0.5rem;
+    margin-left: auto;
     font-size: 0.8rem;
     color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
   }
 
   .page-btn {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     color: var(--text-secondary);
-    padding: 0.4rem 0.7rem;
+    min-width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
     border-radius: var(--radius-sm);
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     cursor: pointer;
     transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .page-btn:hover:not(:disabled) {
@@ -483,18 +791,60 @@
   }
 
   .page-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
-  }
-
-  .page-btn--nav {
-    padding: 0.4rem 0.5rem;
-    min-width: 2rem;
   }
 
   .page-btn--active {
     background: var(--accent);
     border-color: var(--accent);
     color: white;
+    box-shadow: 0 2px 10px var(--accent-glow);
+  }
+
+  @media screen and (max-width: 768px) {
+    .reports-section {
+      padding: 1.25rem 1rem;
+    }
+
+    .table-wrapper {
+      display: none;
+    }
+
+    .cards {
+      display: flex;
+    }
+
+    .reports-head {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .dropdown-btn {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .dropdown-menu {
+      left: 0;
+      right: 0;
+      max-width: none;
+    }
+
+    .pagination {
+      justify-content: center;
+    }
+
+    .pagination__info {
+      width: 100%;
+      text-align: center;
+      margin-left: 0;
+      margin-top: 0.35rem;
+    }
+
+    .page-btn {
+      min-width: 42px;
+      height: 42px;
+    }
   }
 </style>

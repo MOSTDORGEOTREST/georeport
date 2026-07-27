@@ -3,6 +3,7 @@
   src: url('/fonts/Quicksand.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -14,14 +15,19 @@
   --glass-border-hover: rgba(255, 255, 255, 0.25);
   --glass-blur: blur(20px);
   --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.65);
-  --text-muted: rgba(255, 255, 255, 0.4);
+  --text-secondary: rgba(255, 255, 255, 0.68);
+  --text-muted: rgba(255, 255, 255, 0.45);
   --accent: #73893d;
   --accent-light: #8fa854;
+  --accent-bright: #a8c46a;
   --accent-glow: rgba(115, 137, 61, 0.4);
+  --accent-soft: rgba(143, 168, 84, 0.14);
   --accent-gradient: linear-gradient(135deg, #73893d 0%, #8fa854 100%);
-  --danger: #c0392b;
-  --danger-glow: rgba(192, 57, 43, 0.4);
+  --gold: #d3a462;
+  --gold-soft: rgba(211, 164, 98, 0.15);
+  --danger: #d9534f;
+  --danger-glow: rgba(217, 83, 79, 0.35);
+  --danger-soft: rgba(217, 83, 79, 0.12);
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
@@ -29,6 +35,7 @@
   --header-height: 4.5rem;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-body: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 *, *::before, *::after {
@@ -50,16 +57,52 @@ body {
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-primary);
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #1a0a2e 100%);
-  background-attachment: fixed;
+  background-color: var(--bg-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Фиксированный фоновый слой вместо background-attachment: fixed
+   (корректно работает на iOS и не «рвётся» на длинных страницах) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 0%, rgba(115, 137, 61, 0.18), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 15%, rgba(211, 164, 98, 0.08), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 80% 95%, rgba(97, 61, 137, 0.16), transparent 65%),
+    linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #1a0a2e 100%);
+  pointer-events: none;
+}
+
+/* Тонкая инженерная сетка поверх градиента */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+  pointer-events: none;
 }
 
 #app {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+::selection {
+  background: rgba(143, 168, 84, 0.35);
+  color: #fff;
 }
 
 a {
@@ -69,7 +112,7 @@ a {
 }
 
 a:hover {
-  color: #a8c46a;
+  color: var(--accent-bright);
 }
 
 h1, h2, h3, h4 {
@@ -83,6 +126,12 @@ button {
   border: none;
   outline: none;
   font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 img {
@@ -105,7 +154,7 @@ ul {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-glass);
+  box-shadow: var(--shadow-glass), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition: var(--transition);
 }
 
@@ -119,6 +168,7 @@ ul {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.95rem;
@@ -126,17 +176,18 @@ ul {
   border: none;
   cursor: pointer;
   font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-accent {
   background: var(--accent-gradient);
   color: white;
-  box-shadow: 0 4px 15px var(--accent-glow);
+  box-shadow: 0 4px 15px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-accent:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px var(--accent-glow);
+  box-shadow: 0 6px 25px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-accent:active {
@@ -154,6 +205,7 @@ ul {
   color: var(--text-primary);
   border: 1px solid var(--glass-border);
   backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .btn-glass:hover {
@@ -162,19 +214,20 @@ ul {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+  background: linear-gradient(135deg, #b23b37 0%, #d9534f 100%);
   color: white;
-  box-shadow: 0 4px 15px var(--danger-glow);
+  box-shadow: 0 4px 15px var(--danger-glow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-danger:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px var(--danger-glow);
+  box-shadow: 0 6px 25px var(--danger-glow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .input-glass {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 1rem;
+  min-height: 44px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
@@ -183,6 +236,8 @@ ul {
   font-size: 0.95rem;
   transition: var(--transition);
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .input-glass::placeholder {
@@ -207,6 +262,36 @@ ul {
   padding: 0 1.5rem;
 }
 
+/* Заголовок секции: надзаголовок + название */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+.section-kicker::before,
+.section-kicker::after {
+  content: '';
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent-gradient);
+  opacity: 0.7;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -222,6 +307,11 @@ ul {
   50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(115, 137, 61, 0.2); }
 }
 
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 .fade-in {
   animation: fadeIn 0.6s ease-out forwards;
 }
@@ -233,5 +323,17 @@ ul {
 @media screen and (max-width: 768px) {
   .container {
     padding: 0 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

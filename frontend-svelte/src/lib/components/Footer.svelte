@@ -1,128 +1,147 @@
-<script>
-</script>
-
 <footer class="footer">
-  <div class="footer__dev">
-    РАЗРАБОТАНО ГЕОТЕХНИЧЕСКОЙ ЛАБОРАТОРИЕЙ МОСТДОРГЕОТРЕСТ
-  </div>
+  <div class="footer__inner">
+    <div class="footer__grid" id="contact">
+      <div class="footer__brand">
+        <a href="https://mdgt.ru/" target="_blank" rel="noreferrer" class="footer__logo-link" aria-label="Сайт МДГТ">
+          <img src="/images/mdgt.png" alt="МДГТ" class="footer__logo-img" />
+        </a>
+        <p class="footer__dev">
+          Разработано геотехнической лабораторией Мостдоргеотрест
+        </p>
+      </div>
 
-  <div class="footer__contacts" id="contact">
-    <div class="footer__contact-group">
-      <h3 class="footer__contact-title">
-        <i class="ri-mail-line"></i> Почта:
-      </h3>
-      <a href="mailto:mostdorgeotrest@mail.ru" class="footer__contact-link" target="_blank" rel="noreferrer">
-        support@mdgt.ru
-      </a>
+      <div class="footer__col">
+        <h3 class="footer__col-title">Контакты</h3>
+        <a href="mailto:support@mdgt.ru" class="footer__link">
+          <i class="ri-mail-line" aria-hidden="true"></i>
+          support@mdgt.ru
+        </a>
+        <a href="https://mdgt.ru/" class="footer__link" target="_blank" rel="noreferrer">
+          <i class="ri-global-line" aria-hidden="true"></i>
+          mdgt.ru
+        </a>
+      </div>
+
+      <div class="footer__col">
+        <h3 class="footer__col-title">Документы</h3>
+        <a
+          class="footer__link"
+          href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i class="ri-file-text-line" aria-hidden="true"></i>
+          Согласие на обработку ПД
+        </a>
+        <a
+          class="footer__link"
+          href="/static/docs/Политика_на сайт.pdf"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <i class="ri-shield-line" aria-hidden="true"></i>
+          Политика конфиденциальности
+        </a>
+      </div>
     </div>
 
-    <div class="footer__contact-group">
-      <h3 class="footer__contact-title">
-        <i class="ri-global-line"></i> Веб-сайт:
-      </h3>
-      <a href="https://mdgt.ru/" class="footer__contact-link" target="_blank" rel="noreferrer">
-        mdgt.ru
-      </a>
+    <div class="footer__bottom">
+      <span class="footer__copy">&copy; Мостдоргеотрест {new Date().getFullYear()}</span>
+      <span class="footer__note">GEOREPORT — гарантия подлинности данных</span>
     </div>
-  </div>
-
-  <div class="footer__bottom">
-    <a href="https://mdgt.ru/" target="_blank" rel="noreferrer" class="footer__logo-link">
-      <img src="/images/mdgt.png" alt="МДГТ" class="footer__logo-img" />
-    </a>
-    <span class="footer__copy">&copy; Мостдоргеотрест {new Date().getFullYear()}</span>
-  </div>
-
-  <div class="footer__docs">
-    <a
-      class="footer__doc-link"
-      href="/static/docs/Согласие_на_обработку_ПД_на сайт.pdf"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Согласие на обработку персональных данных
-    </a>
-    <a
-      class="footer__doc-link"
-      href="/static/docs/Политика_на сайт.pdf"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Политика конфиденциальности
-    </a>
   </div>
 </footer>
 
 <style>
   .footer {
     flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
     margin-top: 4rem;
-    padding: 2rem 1.5rem 1rem;
     background: rgba(255, 255, 255, 0.03);
     border-top: 1px solid var(--glass-border);
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .footer__inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2.25rem 1.5rem 1.25rem;
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 2rem;
+    padding-bottom: 1.5rem;
+    scroll-margin-top: calc(var(--header-height) + 1rem);
+  }
+
+  .footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .footer__logo-img {
+    width: 44px;
+    height: 44px;
+    opacity: 0.75;
+    transition: var(--transition);
+  }
+
+  .footer__logo-link:hover .footer__logo-img {
+    opacity: 1;
   }
 
   .footer__dev {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     color: var(--text-muted);
-    text-align: center;
+    line-height: 1.6;
+    max-width: 260px;
   }
 
-  .footer__contacts {
-    display: flex;
-    gap: 3rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .footer__contact-group {
+  .footer__col {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.5rem;
   }
 
-  .footer__contact-title {
-    font-size: 0.9rem;
+  .footer__col-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
     color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
+    margin-bottom: 0.25rem;
   }
 
-  .footer__contact-link {
+  .footer__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     color: var(--text-muted);
     font-size: 0.85rem;
+    min-height: 32px;
   }
 
-  .footer__contact-link:hover {
+  .footer__link i {
     color: var(--accent-light);
+    font-size: 1rem;
+  }
+
+  .footer__link:hover {
+    color: var(--accent-bright);
   }
 
   .footer__bottom {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding-top: 0.5rem;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-top: 1.25rem;
     border-top: 1px solid var(--glass-border);
-    width: 100%;
-    justify-content: center;
-  }
-
-  .footer__logo-img {
-    width: 40px;
-    height: 40px;
-    opacity: 0.7;
-    transition: var(--transition);
-  }
-
-  .footer__logo-img:hover {
-    opacity: 1;
   }
 
   .footer__copy {
@@ -130,20 +149,27 @@
     font-size: 0.8rem;
   }
 
-  .footer__docs {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-  }
-
-  .footer__doc-link {
-    font-size: 0.7rem;
+  .footer__note {
     color: var(--text-muted);
-    text-decoration: underline;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  .footer__doc-link:hover {
-    color: var(--accent-light);
+  @media screen and (max-width: 700px) {
+    .footer__inner {
+      padding: 2rem 1rem 1.25rem;
+    }
+
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .footer__bottom {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
   }
 </style>

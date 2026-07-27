@@ -40,18 +40,15 @@
 
 Полный стек: PostgreSQL, Redis, MinIO, backend + frontend.
 
-**Svelte:**
+**Svelte (основной фронтенд):**
 ```bash
 cp .env.example .env
 # Отредактируйте .env при необходимости
-docker compose -f docker-compose-test-svelte.yml up --build -d
-```
-
-**React:**
-```bash
-cp .env.example .env
 docker compose -f docker-compose-test.yml up --build -d
 ```
+
+Старый React-фронтенд сохранён в `frontend/`, но текущие compose-файлы его
+не собирают.
 
 Приложение: `http://localhost`
 
@@ -69,12 +66,7 @@ docker compose -f docker-compose-test.yml up --build -d
 
 3. **Запуск:**
 
-   **Svelte:**
-   ```bash
-   docker compose -f docker-compose-svelte.yml up --build -d
-   ```
-
-   **React:**
+   **Svelte (основной фронтенд):**
    ```bash
    docker compose up --build -d
    ```
@@ -91,10 +83,8 @@ docker compose -f docker-compose-test.yml up --build -d
 ├── server/
 │   ├── conf.d/           # Nginx для React
 │   └── conf.d-svelte/    # Nginx для Svelte
-├── docker-compose.yml           # Production (React)
-├── docker-compose-svelte.yml    # Production (Svelte)
-├── docker-compose-test.yml      # Тест (React)
-├── docker-compose-test-svelte.yml  # Тест (Svelte)
+├── docker-compose.yml           # Production (Svelte)
+├── docker-compose-test.yml      # Локальный полный стек (Svelte)
 └── .env.example
 ```
 
@@ -118,7 +108,7 @@ poetry run alembic upgrade head
 ## Очистка Docker
 
 ```bash
-docker compose -f docker-compose-test-svelte.yml down -v
+docker compose -f docker-compose-test.yml down -v
 # или
 docker rm $(docker ps -a -q) -f
 docker rmi $(docker images -a -q) -f

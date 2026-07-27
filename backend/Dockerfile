@@ -1,14 +1,13 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /code/app
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PATH=$PATH:$HOME/.poetry/bin
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8555
 
-RUN apt-get update && apt-get install -y --no-install-recommends libzbar-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends curl libzbar0 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 - \
@@ -18,8 +17,10 @@ COPY poetry.lock /code/poetry.lock
 COPY pyproject.toml /code/pyproject.toml
 
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+    poetry install --only main --no-root --no-interaction --no-ansi
 
 COPY app /code/app
 
-RUN chmod -R 777 ./
+RUN useradd --create-home appuser && chown -R appuser:appuser /code
+
+USER appuser

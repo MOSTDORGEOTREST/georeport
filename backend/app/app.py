@@ -328,7 +328,7 @@ async def startup_event():
 
                 user_names = await session.execute(
                     select(tables.Users).
-                    filter_by(username="mdgt_admin")
+                    filter_by(username=configs.superuser_name)
                 )
                 user_names = user_names.scalars().first()
 
@@ -351,6 +351,12 @@ async def startup_event():
                         )
 
                         session.add(user)
+                        await session.flush()
+
+                        if not configs.seed_demo_data:
+                            await session.commit()
+                            print("Создан суперпользователь")
+                            return
 
                         user_trial = tables.Users(
                             username="trial",
@@ -368,10 +374,11 @@ async def startup_event():
                         )
 
                         session.add(user_trial)
+                        await session.flush()
 
                         report = tables.Reports(
                             id="95465771a6f399bf52cd57db2cf640f8624fd868",
-                            user_id=1,
+                            user_id=user.id,
                             datetime=datetime.datetime.now(),
                             laboratory_number="1",
                             test_type="Трехосное нагружение",
@@ -399,7 +406,7 @@ async def startup_event():
 
                             report = tables.Reports(
                                 id=f"9546577{i}6f399bf52cd57db2cf640f8624fd868",
-                                user_id=2,
+                                user_id=user_trial.id,
                                 datetime=datetime.date.today(),
                                 object_number=random.choice(["112-54", "341-15", "294-41"]),
                                 laboratory_number=f"1{i}",
@@ -419,6 +426,5 @@ async def startup_event():
                         print("Ошибка создания суперпользователя ", str(err))
 
     await create_surer()
-
 
 

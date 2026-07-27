@@ -2,12 +2,14 @@ services:
   backend:
     build: ./backend/
     env_file: .env
-    command: bash -c 'poetry run uvicorn main:app --host 0.0.0.0 --port 8000'
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
       - FILE_COUNT=${FILE_COUNT:-10}
       - FILE_SIZE=${FILE_SIZE:-1024}
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_NAME}
-      - WORK_TYPE=${WORK_TYPE}
+      - WORK_TYPE=${WORK_TYPE:-BACKEND}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://georeport.ru}
+      - SEED_DEMO_DATA=${SEED_DEMO_DATA:-false}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ALGORITHM=${JWT_ALGORITHM}
       - JWT_EXPIRATION=${JWT_EXPIRATION}
@@ -38,9 +40,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend/
-      args:
-        - REACT_APP_SERVER_IP=/
+      context: ./frontend-svelte/
     expose:
       - "80"
     restart: unless-stopped
@@ -67,7 +67,7 @@ services:
     volumes:
       - ./app/key.key:/etc/ssl/key.key:ro
       - ./app/crt.crt:/etc/ssl/crt.crt:ro
-      - ./server/conf.d:/etc/nginx/conf.d:ro
+      - ./server/conf.d-svelte:/etc/nginx/conf.d:ro
       - ./app:/app:ro
     ports:
       - "80:80"

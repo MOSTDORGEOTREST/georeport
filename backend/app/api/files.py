@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Response, status, UploadFile
 from typing import Optional, List
-import sys
 
 from models.files import File
 from models.users import User, LicenseLevel
@@ -8,7 +7,7 @@ from services.users import get_current_user
 from services.depends import get_report_service, get_unit_of_work
 from services.reports import ReportsService
 from config import configs
-from modules.exceptions import exception_right, exception_file_count, exception_file_size
+from modules.exceptions import exception_right, exception_file_count, exception_file_size, exception_not_found
 
 router = APIRouter(
     prefix="/files",
@@ -34,11 +33,11 @@ async def upload_file(
 
     files_count = await service.get_files_count_by_report(report_id=report_id)
 
-    if files_count > configs.file_count:
+    if files_count >= configs.file_count:
         raise exception_file_count
 
     contents = await file.read()
-    if sys.getsizeof(contents) / (1024 * 1024) > configs.file_size:
+    if len(contents) / (1024 * 1024) > configs.file_size:
         raise exception_file_size
 
     #format = file.filename.split(".")[-1].lower()
@@ -56,6 +55,9 @@ async def get_files(
         service: ReportsService = Depends(get_report_service)
 ):
     """Просмотр отчетов по объекту"""
+    report = await service.get(report_id)
+    if not report.active:
+        raise exception_not_found
     return await service.get_files(report_id=report_id)
 
 @router.delete('/', status_code=status.HTTP_204_NO_CONTENT)
