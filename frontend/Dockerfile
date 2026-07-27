@@ -1,24 +1,25 @@
-FROM node:18-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-ARG REACT_APP_SERVER_IP=/
-ENV REACT_APP_SERVER_IP=${REACT_APP_SERVER_IP}
-ENV DISABLE_ESLINT_PLUGIN=true
 ENV NODE_OPTIONS=--max_old_space_size=512
 ENV GENERATE_SOURCEMAP=false
 
-RUN npm run build
+RUN pnpm run build
 
 FROM nginx:alpine
 
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+RUN chmod -R a+rX /usr/share/nginx/html
 
 EXPOSE 80
 

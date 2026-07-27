@@ -1,94 +1,73 @@
 # GEOREPORT
 
-> Сервис аутентификации протоколов лабораторных испытаний. Гарантия подлинности данных.
-
-![logo](https://s3.timeweb.com/cw78444-3db3e634-248a-495a-8c38-9f7322725c84/logo.png)
-
-**GEOREPORT** — проект компании «АО МОСТДОРГЕОТРЕСТ» для аутентификации протоколов лабораторных испытаний и защиты от подделки.
-
----
-
-## Возможности
-
-- **Управление пользователями** — лицензии, лимиты, доступ
-- **Протоколы** — хранение и верификация отчётов
-- **Личный кабинет** — создание протоколов, QR-коды, статистика просмотров
-- **API** — интеграция с внешними системами
-
----
+Сервис аутентификации протоколов лабораторных испытаний и защиты данных от подделки.
 
 ## Стек
 
-| Слой | Технологии |
-|------|------------|
-| **Backend** | FastAPI, PostgreSQL, SQLAlchemy, Redis, S3/MinIO |
-| **Frontend** | **Svelte** (SvelteKit) или **React** (CRA) |
-| **Инфра** | Docker, Nginx, SSL |
+- Backend: FastAPI, PostgreSQL, SQLAlchemy, Redis, S3/MinIO
+- Frontend: SvelteKit
+- Инфраструктура: Docker Compose, Nginx, SSL
 
----
+Проект работает только в одной конфигурации: Svelte-фронтенд из `frontend/`
+и FastAPI-бэкенд из `backend/`. Переключателя режима нет.
 
-## Фронтенды
+## Локальный запуск полного стека
 
-| Вариант | Папка | Описание |
-|---------|-------|----------|
-| **Svelte** | `frontend-svelte/` | SvelteKit, glassmorphism |
-| **React** | `frontend/` | Create React App |
-
----
-
-## Быстрый старт (тест)
-
-Полный стек: PostgreSQL, Redis, MinIO, backend + frontend.
-
-**Svelte (основной фронтенд):**
 ```bash
-cp .env.example .env
-# Отредактируйте .env при необходимости
 docker compose -f docker-compose-test.yml up --build -d
 ```
 
-Старый React-фронтенд сохранён в `frontend/`, но текущие compose-файлы его
-не собирают.
+Приложение откроется на `http://localhost`.
 
-Приложение: `http://localhost`
+Остановка:
 
----
+```bash
+docker compose -f docker-compose-test.yml down
+```
 
-## Деплой (production)
+## Production
 
-1. **Скопируйте `.env`:**
+1. Создайте `.env`:
+
    ```bash
    cp .env.example .env
    ```
-   Заполните переменные (PostgreSQL, JWT, S3/MinIO).
 
-2. **SSL-сертификаты** — положите `key.key` и `crt.crt` в `./app/`.
+2. Задайте реальные PostgreSQL, JWT, S3 и учётные данные администратора.
+3. Положите SSL-сертификаты `key.key` и `crt.crt` в `app/`.
+4. Запустите:
 
-3. **Запуск:**
-
-   **Svelte (основной фронтенд):**
    ```bash
    docker compose up --build -d
    ```
 
----
+Обновление уже работающего сервера:
 
-## Структура проекта
-
+```bash
+git pull
+docker compose up --build -d --remove-orphans
+docker compose ps
 ```
+
+Простой перезапуск без пересборки:
+
+```bash
+docker compose restart
+```
+
+## Структура
+
+```text
 .
-├── backend/              # FastAPI
-├── frontend/              # React (CRA)
-├── frontend-svelte/       # Svelte (SvelteKit)
+├── backend/                 # FastAPI API
+├── frontend/                # SvelteKit
 ├── server/
-│   ├── conf.d/           # Nginx для React
-│   └── conf.d-svelte/    # Nginx для Svelte
-├── docker-compose.yml           # Production (Svelte)
-├── docker-compose-test.yml      # Локальный полный стек (Svelte)
+│   ├── conf.d/app.conf      # Production Nginx
+│   └── test.conf            # Локальный тестовый Nginx
+├── docker-compose.yml       # Production
+├── docker-compose-test.yml  # Полный локальный стек
 └── .env.example
 ```
-
----
 
 ## Миграции
 
@@ -97,19 +76,6 @@ cd backend
 poetry run alembic upgrade head
 ```
 
----
-
 ## Схема БД
 
 [Схема](https://dbdiagram.io/d/64edcb6a02bd1c4a5e99ec69)
-
----
-
-## Очистка Docker
-
-```bash
-docker compose -f docker-compose-test.yml down -v
-# или
-docker rm $(docker ps -a -q) -f
-docker rmi $(docker images -a -q) -f
-```

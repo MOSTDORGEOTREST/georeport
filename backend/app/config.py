@@ -8,7 +8,6 @@ class Configs:
     host_ip: str = os.environ.get('HOST_IP', '127.0.0.1')
     public_base_url: str = os.environ.get('PUBLIC_BASE_URL', 'https://georeport.ru').rstrip('/')
     seed_demo_data: bool = os.environ.get('SEED_DEMO_DATA', 'false').lower() == 'true'
-    work_type: str = os.environ.get('WORK_TYPE')
     database_url: str = os.environ.get('DATABASE_URL')
     jwt_secret: str = os.environ.get('JWT_SECRET')
     jwt_algorithm: str = os.environ.get('JWT_ALGORITHM')

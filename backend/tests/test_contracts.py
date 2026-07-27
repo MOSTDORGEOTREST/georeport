@@ -15,7 +15,6 @@ os.environ.setdefault("HOST_IP", "127.0.0.1")
 os.environ.setdefault("PUBLIC_BASE_URL", "https://georeport.ru")
 os.environ.setdefault("FILE_COUNT", "10")
 os.environ.setdefault("FILE_SIZE", "50")
-os.environ.setdefault("WORK_TYPE", "BACKEND")
 os.environ.setdefault(
     "DATABASE_URL",
     "postgresql+asyncpg://user:password@127.0.0.1:5432/georeport",
@@ -81,7 +80,11 @@ class BackendContractTests(unittest.TestCase):
         )
 
         token = UsersService.create_token(user).access_token
-        payload = jwt.decode(token, "test-secret", algorithms=["HS256"])
+        payload = jwt.decode(
+            token,
+            os.environ["JWT_SECRET"],
+            algorithms=[os.environ["JWT_ALGORITHM"]],
+        )
 
         self.assertNotIn("password_hash", payload["user"])
         self.assertLessEqual(abs((payload["exp"] - payload["iat"]) - 3600), 10)

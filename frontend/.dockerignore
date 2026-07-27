@@ -1,6 +1,5 @@
 node_modules
 build
-.dockerignore
-Dockerfile
-docker-compose-dev.yml
-docker-compose.yml
+.svelte-kit
+tests
+.DS_Store

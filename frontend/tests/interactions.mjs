@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const BASE = 'http://localhost:5173';
+const BASE = process.env.BASE_URL || 'http://localhost:5173';
 const OUT = '/tmp/shots/interact';
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -75,7 +75,12 @@ await mockApi(ctx);
 let page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', e => errors.push(String(e)));
-page.on('console', m => { if (m.type() === 'error' && !m.text().includes('401')) errors.push(m.text()); });
+page.on('console', m => {
+  if (m.type() === 'error' && !m.text().includes('401')) {
+    const url = m.location().url;
+    errors.push(url ? `${m.text()} (${url})` : m.text());
+  }
+});
 
 await page.goto(BASE + '/login', { waitUntil: 'networkidle' });
 

@@ -1,7 +1,7 @@
 import { chromium, devices } from 'playwright';
 import fs from 'fs';
 
-const BASE = 'http://localhost:5173';
+const BASE = process.env.BASE_URL || 'http://localhost:5173';
 const OUT = process.argv[2] || '/tmp/shots/before';
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -56,7 +56,12 @@ for (const t of targets) {
   await mockApi(ctx, { logged: false });
   let page = await ctx.newPage();
   const errors = [];
-  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('console', m => {
+    if (m.type() === 'error') {
+      const url = m.location().url;
+      errors.push(url ? `${m.text()} (${url})` : m.text());
+    }
+  });
   page.on('pageerror', e => errors.push(String(e)));
 
   await page.goto(BASE + '/', { waitUntil: 'networkidle' });
@@ -87,7 +92,12 @@ for (const t of targets) {
   ctx = await browser.newContext({ viewport: t.viewport, isMobile: t.isMobile, hasTouch: t.hasTouch, deviceScaleFactor: t.deviceScaleFactor });
   await mockApi(ctx, { logged: true });
   page = await ctx.newPage();
-  page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('console', m => {
+    if (m.type() === 'error') {
+      const url = m.location().url;
+      errors.push(url ? `${m.text()} (${url})` : m.text());
+    }
+  });
   page.on('pageerror', e => errors.push(String(e)));
   await page.goto(BASE + '/login', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);

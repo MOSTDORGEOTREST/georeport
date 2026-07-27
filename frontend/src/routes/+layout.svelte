@@ -1,5 +1,5 @@
 <script>
-  import '../app.css';
+  import '../App.css';
   import Header from '$lib/components/Header.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import CookieConsent from '$lib/components/CookieConsent.svelte';
