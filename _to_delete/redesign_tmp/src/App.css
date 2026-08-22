@@ -1,0 +1,410 @@
+/* ════════════════════════════════════════════════════════════════
+   GEOREPORT · дизайн-система, синхронизированная с mdgt.ru
+   Шрифты: Unbounded (display) · Inter (текст) · JetBrains Mono (данные)
+   Палитра: тёмный «инженерный» синий + янтарь + бумажные поверхности
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Unbounded ── */
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/unbounded-cyrillic-400-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/unbounded-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/unbounded-cyrillic-600-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/unbounded-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:800;font-display:swap;src:url(/fonts/unbounded-cyrillic-800-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Unbounded';font-style:normal;font-weight:800;font-display:swap;src:url(/fonts/unbounded-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+/* ── Inter ── */
+@font-face{font-family:'Inter';font-style:normal;font-weight:300;font-display:swap;src:url(/fonts/inter-cyrillic-300-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:300;font-display:swap;src:url(/fonts/inter-latin-300-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/inter-cyrillic-400-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/inter-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/inter-cyrillic-500-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/inter-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/inter-cyrillic-600-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/inter-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+/* ── JetBrains Mono ── */
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/jetbrains-mono-cyrillic-400-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/jetbrains-mono-cyrillic-500-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/jetbrains-mono-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+2013,U+2014,U+2018-201A,U+201C-201E,U+2026,U+20BD,U+2212;}
+
+:root {
+  color-scheme: light;
+
+  /* бумажные поверхности (светлые секции mdgt.ru) */
+  --bg-primary: #F2ECDF;
+  --bg-secondary: #E9E1CF;
+  --paper-card: #FBF8F1;
+
+  /* тёмная «шахта» (hero mdgt.ru) */
+  --dark: #111826;
+  --dark-2: #141B2A;
+  --dark-ink: #F4EFE4;
+  --dark-ink-dim: #C9C2B2;
+  --dark-muted: #948E80;
+  --dark-line: rgba(244, 239, 228, 0.13);
+  --dark-line-soft: rgba(244, 239, 228, 0.06);
+
+  /* чернила на бумаге */
+  --text-primary: #221A0E;
+  --text-secondary: rgba(34, 26, 14, 0.68);
+  --text-muted: rgba(34, 26, 14, 0.52);
+
+  /* янтарь — фирменный акцент */
+  --amber: #E8A33D;
+  --amber-hi: #FFC96B;
+  --amber-deep: #8F5A10;
+  --accent: #A66A14;            /* янтарь для светлых поверхностей */
+  --accent-light: #B97F24;
+  --accent-bright: #8F5A10;
+  --accent-glow: rgba(232, 163, 61, 0.30);
+  --accent-soft: rgba(232, 163, 61, 0.14);
+  --accent-gradient: linear-gradient(135deg, var(--amber-hi), var(--amber));
+
+  /* глубокий зелёный (полоса «испытания» на сайте) — статусы успеха */
+  --green: #2F5A4A;
+  --green-soft: rgba(47, 90, 74, 0.12);
+  --green-live: #41D97C;
+
+  --gold: var(--accent);
+  --gold-soft: var(--accent-soft);
+
+  --danger: #B3402F;
+  --danger-glow: rgba(179, 64, 47, 0.22);
+  --danger-soft: rgba(179, 64, 47, 0.09);
+
+  /* линии и поверхности */
+  --line: rgba(34, 26, 14, 0.16);
+  --line-soft: rgba(34, 26, 14, 0.09);
+  --glass-bg: var(--paper-card);
+  --glass-bg-hover: #FFFDF6;
+  --glass-border: var(--line-soft);
+  --glass-border-hover: rgba(166, 106, 20, 0.45);
+  --glass-blur: blur(16px);
+  --surface-elevated: #FFFDF6;
+  --surface-soft: rgba(34, 26, 14, 0.045);
+  --overlay: rgba(14, 11, 7, 0.55);
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-pill: 99px;
+
+  --shadow-glass: 0 2px 12px rgba(60, 42, 12, 0.06);
+  --shadow-card-hover: 0 14px 30px rgba(60, 42, 12, 0.12);
+
+  --header-height: 4.5rem;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --transition: all 0.3s var(--ease);
+
+  --font-d: 'Unbounded', system-ui, sans-serif;
+  --font-s: 'Inter', system-ui, sans-serif;
+  --font-m: 'JetBrains Mono', ui-monospace, monospace;
+  --font-body: var(--font-s);
+
+  /* фирменный «геологический разрез» */
+  --strata: linear-gradient(90deg, #6F563C 0 16.6%, #A26A35 0 33.3%, #DDB56A 0 50%, #B9D4E4 0 66.6%, #8E9198 0 83.3%, #47836E 0 100%);
+  --strata-v: linear-gradient(180deg, #6F563C 0 16.6%, #A26A35 0 33.3%, #DDB56A 0 50%, #B9D4E4 0 66.6%, #8E9198 0 83.3%, #47836E 0 100%);
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--amber-deep) var(--bg-secondary);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-s);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* фоновая «бумага»: тёплый градиент + янтарное свечение сверху */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(1100px 620px at 50% -8%, rgba(232, 163, 61, 0.20), transparent 62%),
+    linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-primary) 55%, var(--bg-secondary) 100%);
+  pointer-events: none;
+}
+
+/* лёгкое зерно плёнки, как на mdgt.ru */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -100%;
+  z-index: 1600;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+::selection {
+  background: var(--amber);
+  color: #160E02;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--accent-bright);
+}
+
+h1, h2 {
+  font-family: var(--font-d);
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+}
+
+h3, h4 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+p { margin: 0; }
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* ── Карточка «бумага» (бывший glass — имя сохранено) ── */
+.glass {
+  background: var(--paper-card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+  transition: border-color 0.35s, box-shadow 0.35s, transform 0.35s var(--ease);
+}
+
+.glass:hover {
+  border-color: var(--glass-border-hover);
+}
+
+/* ── Кнопки: пилюли, как на основном сайте ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.7rem;
+  min-height: 46px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s, border-color 0.3s, background 0.3s, color 0.3s;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.btn-accent {
+  background: var(--accent-gradient);
+  color: #231604;
+  box-shadow: 0 8px 26px rgba(232, 163, 61, 0.32);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(232, 163, 61, 0.45);
+}
+
+.btn-accent:active { transform: translateY(0); }
+
+.btn-accent:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-glass {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+}
+
+.btn-glass:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #A23A2A, #C4503C);
+  color: #FFF6ED;
+  box-shadow: 0 8px 24px var(--danger-glow);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px var(--danger-glow);
+}
+
+/* ── Поля ввода ── */
+.input-glass {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  min-height: 46px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input-glass::placeholder {
+  color: var(--text-muted);
+}
+
+.input-glass:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: #FFFFFF;
+}
+
+.input-glass.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.container {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ── Заголовок секции: mono-надзаголовок в стиле mdgt.ru ── */
+.section-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-m);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ── Анимации ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 8px 26px rgba(232, 163, 61, 0.30); }
+  50% { box-shadow: 0 8px 40px rgba(232, 163, 61, 0.52); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
