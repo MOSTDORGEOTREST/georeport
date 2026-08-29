@@ -1,5 +1,6 @@
 <script>
   import { reveal } from '$lib/actions/reveal.js';
+  import { glow } from '$lib/actions/glow.js';
 
   const steps = [
     {
@@ -35,7 +36,7 @@
           <div class="step__line"></div>
         {/if}
       </div>
-      <div class="step__card glass" style="--step-color: {step.color}">
+      <div class="step__card glass" style="--step-color: {step.color}" use:glow>
         <div class="step__icon-box" style="background: {step.soft}; color: {step.color}">
           <i class={step.icon}></i>
         </div>
@@ -96,6 +97,8 @@
   }
 
   .step__card {
+    position: relative;
+    overflow: hidden;
     flex: 1;
     display: flex;
     align-items: center;
@@ -105,9 +108,24 @@
     will-change: transform;
   }
 
+  /* свечение за курсором — как у карточек испытаний на mdgt.ru */
+  .step__card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(420px 170px at var(--gx, 50%) 0%, rgba(232, 163, 61, 0.16), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s;
+    pointer-events: none;
+  }
+
   .step__card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-card-hover);
+  }
+
+  .step__card:hover::before {
+    opacity: 1;
   }
 
   .step__icon-box {

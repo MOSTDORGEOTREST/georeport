@@ -43,9 +43,9 @@
   });
 
   const features = [
-    { icon: 'ri-shield-check-line', text: 'Защита от подделки' },
-    { icon: 'ri-qr-scan-2-line', text: 'Проверка по QR-коду' },
-    { icon: 'ri-braces-line', text: 'API для интеграции' }
+    { icon: 'ri-shield-check-line', text: 'Защита от подделки', color: 'var(--amber)' },
+    { icon: 'ri-qr-scan-2-line', text: 'Проверка по QR-коду', color: 'var(--green-live)' },
+    { icon: 'ri-braces-line', text: 'API для интеграции', color: 'var(--amber)' }
   ];
 
   const stripWords = ['Подлинность', 'Защита данных', 'QR-верификация', 'Открытый API'];
@@ -103,15 +103,24 @@
         <ul class="hero__features stagger-in" style="--stagger: 440ms">
           {#each features as f}
             <li class="hero__feature">
-              <i class={f.icon} aria-hidden="true"></i>
+              <i class={f.icon} style="color: {f.color}" aria-hidden="true"></i>
               {f.text}
             </li>
           {/each}
         </ul>
 
-        <p class="hero__trust stagger-in" style="--stagger: 540ms">
-          Разработано в АО «МОСТДОРГЕОТРЕСТ»
-        </p>
+        <a
+          class="hero__trust stagger-in"
+          style="--stagger: 540ms"
+          href="http://mdgt.ru"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Сайт разработчика — АО «МОСТДОРГЕОТРЕСТ»"
+        >
+          <img src="/images/mdgt.png" alt="" class="hero__trust-logo" />
+          <span>Разработано в АО «МОСТДОРГЕОТРЕСТ»</span>
+          <i class="ri-arrow-right-up-line" aria-hidden="true"></i>
+        </a>
       </div>
 
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -352,11 +361,39 @@
   }
 
   .hero__trust {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     font-family: var(--font-m);
     font-size: 0.62rem;
     letter-spacing: 0.28em;
     text-transform: uppercase;
     color: var(--dark-muted);
+    transition: color 0.25s;
+  }
+
+  .hero__trust-logo {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    background: #F6F2E8;
+    border-radius: 8px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+
+  .hero__trust i {
+    font-size: 0.9rem;
+    color: var(--amber);
+    transition: transform 0.3s var(--ease);
+  }
+
+  .hero__trust:hover {
+    color: var(--dark-ink);
+  }
+
+  .hero__trust:hover i {
+    transform: translate(3px, -3px);
   }
 
   .home-img {
@@ -579,6 +616,7 @@
     }
   }
 
+  /* ── CTA: глубокая зелёная карточка (фирменный зелёный mdgt.ru) ── */
   .cta {
     position: relative;
     padding: 3rem 2rem;
@@ -590,40 +628,76 @@
     width: 100%;
     overflow: hidden;
     border-radius: var(--radius-lg);
+    background: linear-gradient(150deg, #2F5A4A 0%, #23453A 100%);
+    border: none;
+    box-shadow: 0 30px 70px rgba(47, 90, 74, 0.35);
   }
 
+  .cta:hover {
+    border: none;
+  }
+
+  /* зерно плёнки + мягкое свечение, как у тёмных карточек сайта */
   .cta::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 90% at 50% -20%, rgba(232, 163, 61, 0.22), transparent 70%);
+    opacity: 0.2;
+    mix-blend-mode: overlay;
     pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    background-size: 220px 220px;
+  }
+
+  .cta::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -40%;
+    width: 70%;
+    aspect-ratio: 1.6;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(ellipse, rgba(65, 217, 124, 0.18), transparent 65%);
+    filter: blur(16px);
   }
 
   .cta__icon {
+    position: relative;
+    z-index: 1;
     width: 64px;
     height: 64px;
-    border-radius: 50%;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--accent-soft);
-    border: 1px solid rgba(166, 106, 20, 0.4);
-    color: var(--accent);
+    background: rgba(244, 239, 228, 0.1);
+    border: 1px solid rgba(244, 239, 228, 0.28);
+    color: var(--amber-hi);
     font-size: 1.8rem;
   }
 
   .cta__title {
+    position: relative;
+    z-index: 1;
     font-family: var(--font-d);
     font-weight: 600;
     font-size: clamp(1.25rem, 2.6vw, 1.6rem);
-    color: var(--text-primary);
+    color: #F6EFE3;
   }
 
   .cta__text {
-    color: var(--text-secondary);
+    position: relative;
+    z-index: 1;
+    color: rgba(244, 239, 228, 0.78);
     max-width: 600px;
     line-height: 1.7;
+  }
+
+  .cta__btn {
+    position: relative;
+    z-index: 1;
   }
 
   .cta__btn {

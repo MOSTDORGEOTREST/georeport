@@ -9,6 +9,7 @@
   import ReportsTable from './ReportsTable.svelte';
   import TokenModal from './TokenModal.svelte';
   import ViewsChart from './ViewsChart.svelte';
+  import { glow } from '$lib/actions/glow.js';
 
   // Анимированные счётчики статистики (уважают prefers-reduced-motion)
   const REDUCED =
@@ -175,7 +176,7 @@
     </div>
 
     <div class="stats fade-in">
-      <div class="stat glass">
+      <div class="stat glass" use:glow>
         <div class="stat__icon stat__icon--accent" aria-hidden="true">
           <i class="ri-stack-line"></i>
         </div>
@@ -185,7 +186,7 @@
         </div>
       </div>
 
-      <div class="stat glass">
+      <div class="stat glass" use:glow>
         <div class="stat__icon stat__icon--gold" aria-hidden="true">
           <i class="ri-file-check-line"></i>
         </div>
@@ -195,7 +196,7 @@
         </div>
       </div>
 
-      <div class="stat glass">
+      <div class="stat glass" use:glow>
         <div class="stat__icon stat__icon--accent" aria-hidden="true">
           <i class="ri-battery-charge-line"></i>
         </div>
@@ -270,6 +271,11 @@
     flex-wrap: wrap;
   }
 
+  .personal__greeting {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .personal__title {
     font-family: var(--font-d);
     font-weight: 600;
@@ -284,6 +290,13 @@
     color: var(--text-secondary);
     font-size: 0.82rem;
     letter-spacing: 0.04em;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .personal__user i {
+    flex-shrink: 0;
   }
 
   .personal__user i {
@@ -328,6 +341,8 @@
   }
 
   .stat {
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     gap: 0.9rem;
@@ -335,9 +350,23 @@
     will-change: transform;
   }
 
+  .stat::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(320px 140px at var(--gx, 50%) 0%, rgba(232, 163, 61, 0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s;
+    pointer-events: none;
+  }
+
   .stat:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-card-hover);
+  }
+
+  .stat:hover::before {
+    opacity: 1;
   }
 
   .stat__icon {
@@ -453,8 +482,8 @@
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--green-soft);
+    color: var(--green);
   }
 
   .token-section__title {

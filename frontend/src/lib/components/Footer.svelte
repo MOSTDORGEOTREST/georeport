@@ -9,7 +9,10 @@
             <small>Геотехническая лаборатория</small>
           </span>
         </a>
-        <p class="footer__dev">Разработано специалистами лаборатории МДГТ</p>
+        <a class="footer__dev" href="http://mdgt.ru" target="_blank" rel="noreferrer">
+          Разработчик — АО «МОСТДОРГЕОТРЕСТ»
+          <i class="ri-arrow-right-line" aria-hidden="true"></i>
+        </a>
       </div>
 
       <div class="footer__col">
@@ -131,14 +134,38 @@
     text-transform: uppercase;
   }
 
+  /* бейдж разработчика в фирменном зелёном, стрелка «уезжает» на hover */
   .footer__dev {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    align-self: flex-start;
+    width: fit-content;
     font-family: var(--font-m);
     font-size: 0.62rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.2em;
-    color: var(--text-muted);
-    line-height: 1.8;
-    max-width: 280px;
+    letter-spacing: 0.18em;
+    color: var(--green);
+    border: 1px solid rgba(47, 90, 74, 0.4);
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 0.95rem;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+  }
+
+  .footer__dev i {
+    font-size: 0.85rem;
+    transition: transform 0.3s var(--ease);
+  }
+
+  .footer__dev:hover {
+    background: var(--green-soft);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .footer__dev:hover i {
+    transform: translateX(4px);
   }
 
   .footer__col {

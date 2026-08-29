@@ -98,12 +98,12 @@
 
     <div class="report__card glass fade-in" style="animation-delay: 0.1s">
       <div class="report__header">
-        <div class="report__header-icon" aria-hidden="true">
-          <i class="ri-flask-line"></i>
-        </div>
+        <a href="http://mdgt.ru" target="_blank" rel="noreferrer" class="report__header-icon" aria-label="Сайт МОСТДОРГЕОТРЕСТ">
+          <img src="/images/mdgt.png" alt="Логотип МОСТДОРГЕОТРЕСТ" />
+        </a>
         <div class="report__header-info">
           <h1 class="report__header-title">МОСТДОРГЕОТРЕСТ</h1>
-          <a href="https://mdgt.ru/" target="_blank" rel="noreferrer" class="report__header-url">mdgt.ru</a>
+          <a href="http://mdgt.ru" target="_blank" rel="noreferrer" class="report__header-url">mdgt.ru</a>
         </div>
       </div>
 
@@ -279,17 +279,28 @@
   }
 
   .report__header-icon {
-    width: 54px;
-    height: 54px;
+    width: 56px;
+    height: 56px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--accent-soft);
-    border: 1px solid rgba(166, 106, 20, 0.4);
-    color: var(--accent);
-    font-size: 1.6rem;
+    background: #F6F2E8;
+    border: 1px solid var(--line-soft);
+    padding: 6px;
     flex-shrink: 0;
+    transition: border-color 0.3s, transform 0.3s var(--ease);
+  }
+
+  .report__header-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .report__header-icon:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
   }
 
   .report__header-info {
@@ -321,12 +332,16 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    table-layout: fixed;
   }
 
   .report__table td {
     padding: 0.7rem 1.25rem;
     border-bottom: 1px dashed var(--line-soft);
     color: var(--text-primary);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
   }
 
   .report__table tr:nth-child(even) td {
@@ -344,7 +359,6 @@
     text-transform: uppercase;
     color: var(--text-muted);
     font-weight: 500;
-    white-space: nowrap;
     border-right: 1px dashed var(--line-soft);
     width: 42%;
   }
@@ -392,11 +406,15 @@
     min-height: 40px;
     transition: var(--transition);
     text-align: left;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .report__file-link i {
     color: var(--accent);
     font-size: 1.05rem;
+    flex-shrink: 0;
   }
 
   .report__file-link:hover {

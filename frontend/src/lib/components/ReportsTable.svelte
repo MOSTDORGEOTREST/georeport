@@ -169,7 +169,7 @@
         aria-expanded={showDropdown}
       >
         <i class="ri-filter-3-line" aria-hidden="true"></i>
-        {selectedObj || 'Все объекты'}
+        <span class="dropdown-btn__label">{selectedObj || 'Все объекты'}</span>
         <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
       </button>
       {#if showDropdown}
@@ -436,6 +436,19 @@
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
     min-height: 40px;
+    max-width: 100%;
+  }
+
+  .dropdown-btn i {
+    flex-shrink: 0;
+  }
+
+  /* длинное имя объекта в кнопке фильтра — обрезаем многоточием */
+  .dropdown-btn__label {
+    max-width: min(48vw, 320px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .dropdown-btn--active {
@@ -493,6 +506,8 @@
     transition: var(--transition);
     display: block;
     width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .dropdown-item:hover {
@@ -572,6 +587,10 @@
     font-weight: 500;
     letter-spacing: 0.04em;
     white-space: nowrap;
+    max-width: min(100%, 300px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
   }
 
   .chip--obj {
@@ -589,6 +608,8 @@
   .data-row {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .data-row__key {
@@ -658,6 +679,7 @@
     justify-content: space-between;
     gap: 0.5rem;
     flex-wrap: wrap;
+    min-width: 0;
   }
 
   .card__ids {
@@ -665,12 +687,17 @@
     align-items: center;
     gap: 0.45rem;
     flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .card__lab {
     font-weight: 700;
     color: var(--text-primary);
     font-size: 0.9rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .card__date {
