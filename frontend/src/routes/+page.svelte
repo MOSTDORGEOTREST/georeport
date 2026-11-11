@@ -117,7 +117,7 @@
         <div class="home-img__overlay">
           {#if reportId}
             <a href="/report/{reportId}" class="home-img__qr-wrapper" aria-label="Открыть пример протокола">
-              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="112" height="112" />
+              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="766" height="173" />
               <span class="home-img__qr-copy">
                 <strong>Пример протокола</strong>
                 <span>Открыть цифровую копию <i class="ri-arrow-right-line" aria-hidden="true"></i></span>
@@ -125,7 +125,7 @@
             </a>
           {:else}
             <div class="home-img__qr-wrapper home-img__qr-wrapper--placeholder" aria-hidden="true">
-              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="112" height="112" />
+              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="766" height="173" />
               <span class="home-img__qr-copy">
                 <strong>Пример протокола</strong>
                 <span>Загрузка ссылки…</span>
@@ -477,7 +477,7 @@
     flex-direction: column;
     align-items: center;
     gap: 0.75rem;
-    width: min(12.5rem, calc(100% - 2rem));
+    width: min(19rem, calc(100% - 2rem));
     padding: 1rem 1rem 0.9rem;
     border-radius: var(--radius-md);
     background: rgba(246, 239, 227, 0.96);
@@ -513,11 +513,11 @@
   }
 
   .home-img__qr {
-    width: clamp(5.75rem, 8vw, 7rem);
+    width: 100%;
     height: auto;
-    aspect-ratio: 1;
-    object-fit: contain;
-    border-radius: 0.35rem;
+    aspect-ratio: 766 / 173;
+    display: block;
+    border-radius: 0.55rem;
   }
 
   .home-img__qr-copy {
@@ -807,13 +807,13 @@
     }
 
     .home-img__qr-wrapper {
-      width: min(11rem, calc(100% - 1.5rem));
+      width: min(17rem, calc(100% - 1.5rem));
       padding: 0.8rem 0.75rem 0.7rem;
       gap: 0.55rem;
     }
 
     .home-img__qr {
-      width: clamp(5rem, 24vw, 6rem);
+      width: 100%;
     }
   }
 
