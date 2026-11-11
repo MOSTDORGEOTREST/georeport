@@ -94,8 +94,15 @@ mirror_image() {
   registry="${registry#https://}"
   registry="${registry%/}"
   local image="${2#docker.io/}"
+  local first_component="${image%%/*}"
 
   if [[ "$image" == "$registry/"* ]]; then
+    printf '%s' "$image"
+    return
+  fi
+
+  # Образы из Quay, GHCR и приватных registry не являются Docker Hub-образами.
+  if [[ "$image" == */* && ( "$first_component" == *.* || "$first_component" == *:* || "$first_component" == "localhost" ) ]]; then
     printf '%s' "$image"
     return
   fi
@@ -113,12 +120,13 @@ apply_mirror() {
     return 1
   fi
 
-  export PYTHON_IMAGE NODE_IMAGE NGINX_IMAGE POSTGRES_IMAGE
+  export PYTHON_IMAGE NODE_IMAGE NGINX_IMAGE CERTBOT_IMAGE POSTGRES_IMAGE
   export REDIS_IMAGE MINIO_IMAGE MINIO_MC_IMAGE
 
   PYTHON_IMAGE="$(mirror_image "$registry" "${PYTHON_IMAGE:-python:3.10-slim-bookworm}")"
   NODE_IMAGE="$(mirror_image "$registry" "${NODE_IMAGE:-node:22-alpine}")"
   NGINX_IMAGE="$(mirror_image "$registry" "${NGINX_IMAGE:-nginx:1.27-alpine}")"
+  CERTBOT_IMAGE="$(mirror_image "$registry" "${CERTBOT_IMAGE:-certbot/certbot:latest}")"
   POSTGRES_IMAGE="$(mirror_image "$registry" "${POSTGRES_IMAGE:-postgres:15-alpine}")"
   REDIS_IMAGE="$(mirror_image "$registry" "${REDIS_IMAGE:-redis:7-alpine}")"
   MINIO_IMAGE="$(mirror_image "$registry" "${MINIO_IMAGE:-minio/minio:latest}")"
@@ -219,12 +227,27 @@ start_stack() {
   fi
 }
 
+clean_selected_project() {
+  if [ "$MODE" = "dev" ]; then
+    compose down --volumes --remove-orphans --rmi local
+    return
+  fi
+
+  compose down --remove-orphans --rmi local || return 1
+
+  # Сертификаты Certbot должны переживать полную пересборку production.
+  # Redis содержит только кэш, поэтому его том можно безопасно пересоздать.
+  if docker volume inspect "${PROJECT}_redis_data" >/dev/null 2>&1; then
+    docker volume rm "${PROJECT}_redis_data"
+  fi
+}
+
 full_deploy() {
   local requested_mode="$1"
   prepare_mode "$requested_mode" || return 1
 
   say "Полностью очищаю Compose-проект '$PROJECT'"
-  compose down --volumes --remove-orphans --rmi local || return 1
+  clean_selected_project || return 1
 
   run_with_registry_fallback \
     "Собираю backend и frontend с нуля" \
@@ -256,14 +279,15 @@ clear_project() {
   fi
 
   say "Очищаю Compose-проект '$PROJECT'"
-  compose down --volumes --remove-orphans --rmi local
+  clean_selected_project
 }
 
 clear_all() {
   ensure_compose || return 1
   clear_project dev || return 1
   clear_project prod || return 1
-  ok "Контейнеры, сети, локальные образы и тома GEOREPORT удалены."
+  ok "Контейнеры, сети, локальные образы и рабочие тома GEOREPORT удалены."
+  echo "  Production-сертификаты Certbot сохранены."
 }
 
 update_code() {

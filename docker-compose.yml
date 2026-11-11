@@ -5,6 +5,7 @@ services:
       args:
         PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.10-slim-bookworm}
     env_file: .env
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
       FILE_COUNT: ${FILE_COUNT:-10}
       FILE_SIZE: ${FILE_SIZE:-1024}
@@ -75,6 +76,9 @@ services:
       - ./app/crt.crt:/etc/ssl/crt.crt:ro
       - ./server/conf.d:/etc/nginx/conf.d:ro
       - ./server/proxy_params.conf:/etc/nginx/snippets/proxy_params.conf:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - webroot-path:/var/www/certbot
     ports:
       - "80:80"
       - "443:443"
@@ -90,5 +94,22 @@ services:
       frontend:
         condition: service_healthy
 
+  certbot:
+    image: ${CERTBOT_IMAGE:-certbot/certbot:latest}
+    restart: unless-stopped
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - webroot-path:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do
+        certbot renew;
+        sleep 12h & wait $${!};
+      done"
+
 volumes:
   redis_data:
+  certbot-etc:
+  certbot-var:
+  webroot-path:

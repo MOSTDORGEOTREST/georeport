@@ -4,6 +4,7 @@ services:
       context: ./backend
       args:
         PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.10-slim-bookworm}
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
       FILE_COUNT: "10"
       FILE_SIZE: "1024"
