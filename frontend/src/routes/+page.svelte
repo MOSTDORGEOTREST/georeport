@@ -5,10 +5,7 @@
   import { reveal } from '$lib/actions/reveal.js';
 
   let hovered = $state(false);
-  let scrollProgress = $state(0);
-  let touchMode = $state(false);
   let reportId = $state(null);
-  const SCROLL_END = 400;
 
   onMount(() => {
     let cancelled = false;
@@ -20,25 +17,8 @@
       })
       .catch(() => {});
 
-    let removeScrollListener = () => {};
-    const isTouch = () => window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window;
-    if (isTouch()) {
-      touchMode = true;
-      const el = document.querySelector('.home-img');
-      if (el) {
-        const update = () => {
-          const y = window.scrollY;
-          scrollProgress = Math.min(1, Math.max(0, y / SCROLL_END));
-        };
-        update();
-        window.addEventListener('scroll', update, { passive: true });
-        removeScrollListener = () => window.removeEventListener('scroll', update);
-      }
-    }
-
     return () => {
       cancelled = true;
-      removeScrollListener();
     };
   });
 
@@ -127,8 +107,7 @@
       <div
         class="home-img stagger-in"
         class:home-img--hover={hovered}
-        class:home-img--touch={touchMode}
-        style="--stagger: 300ms; --scroll-progress: {scrollProgress}; --rx: {tiltX}deg; --ry: {tiltY}deg"
+        style="--stagger: 300ms; --rx: {tiltX}deg; --ry: {tiltY}deg"
         onmouseenter={() => hovered = true}
         onmousemove={handleTilt}
         onmouseleave={resetTilt}
@@ -138,12 +117,19 @@
         <div class="home-img__overlay">
           {#if reportId}
             <a href="/report/{reportId}" class="home-img__qr-wrapper" aria-label="Открыть пример протокола">
-              <img src="/images/qr_index.png" alt="QR" class="home-img__qr" />
-              <span class="home-img__qr-hint">Пример протокола</span>
+              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="112" height="112" />
+              <span class="home-img__qr-copy">
+                <strong>Пример протокола</strong>
+                <span>Открыть цифровую копию <i class="ri-arrow-right-line" aria-hidden="true"></i></span>
+              </span>
             </a>
           {:else}
-            <div class="home-img__qr-wrapper home-img__qr-wrapper--placeholder">
-              <img src="/images/qr_index.png" alt="QR" class="home-img__qr" />
+            <div class="home-img__qr-wrapper home-img__qr-wrapper--placeholder" aria-hidden="true">
+              <img src="/images/qr_index.png" alt="" class="home-img__qr" width="112" height="112" />
+              <span class="home-img__qr-copy">
+                <strong>Пример протокола</strong>
+                <span>Загрузка ссылки…</span>
+              </span>
             </div>
           {/if}
         </div>
@@ -478,59 +464,109 @@
     justify-content: center;
     background: rgba(10, 8, 4, 0);
     border-radius: var(--radius-md);
-    transition: all 0.5s ease;
+    transition: background 0.35s var(--ease);
   }
 
-  .home-img--hover .home-img__overlay {
-    background: rgba(10, 8, 4, 0.5);
+  .home-img--hover .home-img__overlay,
+  .home-img:focus-within .home-img__overlay {
+    background: rgba(10, 8, 4, 0.58);
   }
 
   .home-img__qr-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    width: min(12.5rem, calc(100% - 2rem));
+    padding: 1rem 1rem 0.9rem;
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0);
-    transition: all 0.5s ease;
-    transform: scale(1);
+    background: rgba(246, 239, 227, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.62);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--green);
     text-decoration: none;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.96);
+    transition:
+      opacity 0.28s var(--ease),
+      transform 0.35s var(--ease),
+      background 0.2s ease;
   }
 
-  .home-img--hover .home-img__qr-wrapper {
-    background: rgba(255, 249, 235, 0.16);
-    transform: scale(1.35);
+  .home-img--hover .home-img__qr-wrapper,
+  .home-img:focus-within .home-img__qr-wrapper {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+
+  .home-img__qr-wrapper:hover {
+    background: #fffaf0;
+  }
+
+  .home-img__qr-wrapper:focus-visible {
+    outline: 3px solid var(--amber-hi);
+    outline-offset: 4px;
   }
 
   .home-img__qr {
-    width: 80px;
+    width: clamp(5.75rem, 8vw, 7rem);
     height: auto;
-    opacity: 0;
-    transition: opacity 0.5s ease;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border-radius: 0.35rem;
   }
 
-  .home-img__qr-hint {
+  .home-img__qr-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.28rem;
+    text-align: center;
+  }
+
+  .home-img__qr-copy strong {
+    font-family: var(--font-d);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--green);
+  }
+
+  .home-img__qr-copy > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
     font-family: var(--font-m);
     font-size: 0.56rem;
     font-weight: 500;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--amber-hi);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-    white-space: nowrap;
+    color: var(--text-secondary);
   }
 
-  .home-img--hover .home-img__qr,
-  .home-img--hover .home-img__qr-hint {
-    opacity: 1;
+  .home-img__qr-copy i {
+    color: var(--amber-deep);
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+  }
+
+  .home-img__qr-wrapper:hover .home-img__qr-copy i {
+    transform: translateX(3px);
   }
 
   .home-img__qr-wrapper--placeholder {
     cursor: default;
     pointer-events: none;
+  }
+
+  .home-img__qr-wrapper--placeholder .home-img__qr,
+  .home-img__qr-wrapper--placeholder .home-img__qr-copy {
+    opacity: 0.55;
   }
 
   /* ── Секции на «бумаге» ── */
@@ -770,30 +806,40 @@
       max-height: 320px;
     }
 
-    .home-img--touch .home-img__image {
-      transform: scale(calc(1 + 0.02 * var(--scroll-progress, 0)));
-      transition: none;
+    .home-img__qr-wrapper {
+      width: min(11rem, calc(100% - 1.5rem));
+      padding: 0.8rem 0.75rem 0.7rem;
+      gap: 0.55rem;
     }
 
-    .home-img--touch .home-img__overlay {
-      background: rgba(10, 8, 4, calc(0.5 * var(--scroll-progress, 0)));
-      transition: none;
+    .home-img__qr {
+      width: clamp(5rem, 24vw, 6rem);
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .home-img {
+      cursor: default;
     }
 
-    .home-img--touch .home-img__qr-wrapper {
-      background: rgba(255, 249, 235, calc(0.16 * var(--scroll-progress, 0)));
-      transform: scale(calc(1 + 0.35 * var(--scroll-progress, 0)));
-      transition: none;
+    .home-img__image {
+      transform: scale(1.015);
     }
 
-    .home-img--touch .home-img__qr,
-    .home-img--touch .home-img__qr-hint {
-      opacity: var(--scroll-progress, 0);
-      transition: none;
+    .home-img__scan {
+      opacity: 0;
+      animation-play-state: paused;
     }
 
-    .home-img--hover .home-img__qr-wrapper {
-      transform: scale(1.2);
+    .home-img__overlay {
+      background: rgba(10, 8, 4, 0.48);
+    }
+
+    .home-img__qr-wrapper {
+      opacity: 1;
+      pointer-events: auto;
+      transform: none;
+      touch-action: manipulation;
     }
   }
 </style>

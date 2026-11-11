@@ -23,6 +23,7 @@ GEOREPORT
   dev_lite   тестовая версия: обновить или создать контейнеры
   prod       production: полная очистка и установка с нуля
   prod_lite  production: обновить или создать контейнеры
+  ssl        проверить/обновить SSL, при ошибке использовать standalone
   clear      полностью очистить оба Compose-проекта
   update     обновить код из Git
   info       показать состояние и последние логи
@@ -267,6 +268,37 @@ lite_deploy() {
   start_stack
 }
 
+renew_certificate() {
+  prepare_mode prod || return 1
+
+  say "Проверяю сертификат через webroot без остановки Nginx"
+  compose stop certbot >/dev/null 2>&1 || true
+  if compose run --rm --no-deps certbot webroot; then
+    compose up -d certbot
+    ok "SSL-сертификат действителен или успешно обновлён."
+    return 0
+  fi
+
+  echo "⚠ Webroot-проверка не удалась. Перехожу к аварийному standalone-выпуску."
+  echo "  Только Nginx будет кратковременно остановлен; backend и frontend продолжат работать."
+  compose stop server || return 1
+
+  set +e
+  compose run --rm --no-deps -p 80:80 certbot standalone
+  local certbot_exit=$?
+  set -e
+
+  # Вернуть прокси в работу независимо от результата аварийного выпуска.
+  compose up -d server certbot
+
+  if [ "$certbot_exit" -ne 0 ]; then
+    error "Standalone-выпуск не удался. Nginx возвращён в предыдущий режим."
+    return "$certbot_exit"
+  fi
+
+  ok "Сертификат выпущен через standalone, Nginx снова запущен."
+}
+
 clear_project() {
   local requested_mode="$1"
 
@@ -329,6 +361,7 @@ run_command() {
     dev_lite) lite_deploy dev ;;
     prod) full_deploy prod ;;
     prod_lite) lite_deploy prod ;;
+    ssl) renew_certificate ;;
     clear) clear_all ;;
     update) update_code ;;
     info) show_info ;;
