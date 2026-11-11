@@ -1,31 +1,34 @@
 services:
   backend:
-    build: ./backend/
+    build:
+      context: ./backend
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.10-slim-bookworm}
     env_file: .env
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
     environment:
-      - FILE_COUNT=${FILE_COUNT:-10}
-      - FILE_SIZE=${FILE_SIZE:-1024}
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_NAME}
-      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://georeport.ru}
-      - SEED_DEMO_DATA=${SEED_DEMO_DATA:-false}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_ALGORITHM=${JWT_ALGORITHM}
-      - JWT_EXPIRATION=${JWT_EXPIRATION}
-      - SUPERUSER_NAME=${SUPERUSER_NAME}
-      - SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD}
-      - AWS_URI=${AWS_URI}
-      - AWS_ACCCESS_KEY=${AWS_ACCCESS_KEY}
-      - AWS_SERVICE_NAME=${AWS_SERVICE_NAME}
-      - AWS_SECRET_KEY=${AWS_SECRET_KEY}
-      - AWS_REGION=${AWS_REGION}
-      - AWS_BUCKET=${AWS_BUCKET}
-      - REDIS_URL=redis://redis:6379
+      FILE_COUNT: ${FILE_COUNT:-10}
+      FILE_SIZE: ${FILE_SIZE:-1024}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_NAME}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://georeport.ru}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
+      SUPERUSER_NAME: ${SUPERUSER_NAME}
+      SUPERUSER_PASSWORD: ${SUPERUSER_PASSWORD}
+      AWS_URI: ${AWS_URI}
+      AWS_ACCCESS_KEY: ${AWS_ACCCESS_KEY}
+      AWS_SERVICE_NAME: ${AWS_SERVICE_NAME:-s3}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_BUCKET: ${AWS_BUCKET}
+      REDIS_URL: redis://redis:6379
     expose:
       - "8000"
-    restart: always
+    init: true
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/docs')\" || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,25 +36,29 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
 
   frontend:
     build:
-      context: ./frontend/
+      context: ./frontend
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+        NGINX_IMAGE: ${NGINX_IMAGE:-nginx:1.27-alpine}
     expose:
       - "80"
+    init: true
     restart: unless-stopped
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   redis:
-    image: redis:7-alpine
+    image: ${REDIS_IMAGE:-redis:7-alpine}
     expose:
       - "6379"
-    restart: always
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     healthcheck:
@@ -61,21 +68,27 @@ services:
       retries: 5
 
   server:
-    image: nginx
-    restart: always
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    restart: unless-stopped
     volumes:
       - ./app/key.key:/etc/ssl/key.key:ro
       - ./app/crt.crt:/etc/ssl/crt.crt:ro
       - ./server/conf.d:/etc/nginx/conf.d:ro
-      - ./app:/app:ro
+      - ./server/proxy_params.conf:/etc/nginx/snippets/proxy_params.conf:ro
     ports:
       - "80:80"
       - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     depends_on:
       backend:
         condition: service_healthy
       frontend:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   redis_data:

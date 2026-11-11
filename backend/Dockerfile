@@ -1,26 +1,36 @@
-FROM python:3.10-slim
+ARG PYTHON_IMAGE=python:3.10-slim-bookworm
+FROM ${PYTHON_IMAGE} AS dependencies
 
-WORKDIR /code/app
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+WORKDIR /build
 
-EXPOSE 8555
+RUN pip install --no-cache-dir "poetry==2.3.2"
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl libzbar0 \
-    && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --only main --no-root --no-ansi
 
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 - \
-    && ln -s /etc/poetry/bin/poetry /usr/local/bin/poetry
+ARG PYTHON_IMAGE
+FROM ${PYTHON_IMAGE} AS runtime
 
-COPY poetry.lock /code/poetry.lock
-COPY pyproject.toml /code/pyproject.toml
+ENV PATH="/app/.venv/bin:${PATH}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-RUN poetry config virtualenvs.create false && \
-    poetry install --only main --no-root --no-interaction --no-ansi
+WORKDIR /app
 
-COPY app /code/app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzbar0 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 appuser
 
-RUN useradd --create-home appuser && chown -R appuser:appuser /code
+COPY --from=dependencies /build/.venv /app/.venv
+COPY --chown=appuser:appuser app/ /app/
 
 USER appuser
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

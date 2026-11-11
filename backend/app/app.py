@@ -20,7 +20,8 @@ from db.tables import LicenseLevel
 
 
 def create_ip_ports_array(ip: str, *ports):
-    return [f"{ip}:{port}" for port in ports]
+    base_url = ip if ip.startswith(("http://", "https://")) else f"http://{ip}"
+    return [f"{base_url}:{port}" for port in ports]
 
 
 app = FastAPI(
@@ -62,6 +63,11 @@ app.mount(
 @app.get("/")
 async def index():
     return {"message": "successful"}
+
+
+@app.get("/healthz", include_in_schema=False)
+async def healthcheck():
+    return {"status": "ok"}
 
 
 @app.on_event("startup")

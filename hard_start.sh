@@ -1,123 +1,348 @@
 #!/usr/bin/env bash
-# ════════════════════════════════════════════════════════════════════
-# GEOREPORT · «жёсткий» перезапуск: полная очистка docker-артефактов
-# ПРОЕКТА и пересборка всего с нуля (--no-cache, свежие базовые образы).
-#
-#   ./hard_start.sh          — PROD  (docker-compose.yml + .env,
-#                                     внешние PostgreSQL и S3 из .env —
-#                                     НЕ ТРОГАЮТСЯ ВООБЩЕ)
-#   ./hard_start.sh dev      — DEV   (docker-compose-test.yml: локальные
-#                                     тестовые postgres/minio/redis в докере,
-#                                     тестовая БД пересоздаётся с нуля,
-#                                     демо-данные сеются автоматически)
-#
-# Безопасность:
-#   • чистится ТОЛЬКО этот проект (compose-проекты georeport / georeport-test),
-#     чужие контейнеры/образы/тома на хосте не затрагиваются;
-#   • в PROD тома НЕ удаляются (redis-кэш можно снести флагом --purge-cache);
-#     прод-данные живут во внешних PostgreSQL и S3 — docker до них не дотянется;
-#   • в DEV тома удаляются всегда — тестовая БД каждый раз чистая.
-# ════════════════════════════════════════════════════════════════════
-set -euo pipefail
+# GEOREPORT: управление тестовым и production Docker Compose.
+set -Eeuo pipefail
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-MODE="${1:-prod}"
-PURGE_CACHE="no"
-[ "${2:-}" = "--purge-cache" ] && PURGE_CACHE="yes"
+COMPOSE=()
+COMPOSE_FILE=""
+PROJECT=""
+MODE=""
+MIRROR_REGISTRY="${DOCKER_MIRROR:-}"
+MIRROR_APPLIED="no"
 
-# docker compose v2 или классический docker-compose
-if docker compose version >/dev/null 2>&1; then
-  DC="docker compose"
-elif command -v docker-compose >/dev/null 2>&1; then
-  DC="docker-compose"
-else
-  echo "✗ Не найден ни 'docker compose', ни 'docker-compose'." >&2
-  exit 1
-fi
+say()   { printf '\n\033[1;33m▸ %s\033[0m\n' "$*"; }
+ok()    { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
+error() { printf '\033[1;31m✗ %s\033[0m\n' "$*" >&2; }
 
-say()  { printf '\n\033[1;33m▸ %s\033[0m\n' "$*"; }
-ok()   { printf '\033[1;32m✓ %s\033[0m\n' "$*"; }
-fail() { printf '\033[1;31m✗ %s\033[0m\n' "$*" >&2; exit 1; }
+show_menu() {
+  cat <<'EOF'
 
-# ── свежий код ──────────────────────────────────────────────────────
-if [ -d .git ]; then
-  say "git pull"
-  git pull --ff-only || echo "⚠ git pull не удался (offline?) — собираю текущий код"
-fi
+GEOREPORT
+  dev        тестовая версия: полная очистка и установка с нуля
+  dev_lite   тестовая версия: обновить или создать контейнеры
+  prod       production: полная очистка и установка с нуля
+  prod_lite  production: обновить или создать контейнеры
+  clear      полностью очистить оба Compose-проекта
+  update     обновить код из Git
+  info       показать состояние и последние логи
+  exit       закрыть
+EOF
+}
 
-case "$MODE" in
-# ════════════════════════ PROD ═════════════════════════════════════
-prod)
+ensure_compose() {
+  if [ "${#COMPOSE[@]}" -gt 0 ]; then
+    return 0
+  fi
+
+  if docker compose version >/dev/null 2>&1; then
+    COMPOSE=(docker compose)
+  elif command -v docker-compose >/dev/null 2>&1; then
+    COMPOSE=(docker-compose)
+  else
+    error "Не найден ни 'docker compose', ни 'docker-compose'."
+    return 1
+  fi
+}
+
+compose() {
+  "${COMPOSE[@]}" -f "$COMPOSE_FILE" -p "$PROJECT" "$@"
+}
+
+select_dev() {
+  MODE="dev"
+  COMPOSE_FILE="docker-compose-test.yml"
+  PROJECT="georeport-test"
+}
+
+select_prod() {
+  MODE="prod"
   COMPOSE_FILE="docker-compose.yml"
   PROJECT="georeport"
 
-  [ -f .env ] || fail "Нет .env — прод не запускаю. Создайте: cp .env.example .env"
+  if [ ! -f .env ]; then
+    error "Нет .env. Скопируйте .env.example в .env и заполните production-значения."
+    return 1
+  fi
 
-  # проверяем, что критичные переменные внешних баз заданы
-  say "Проверка .env (внешние PostgreSQL и S3)"
-  set -a; . ./.env; set +a
-  for v in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_HOST POSTGRES_PORT POSTGRES_NAME \
-           JWT_SECRET AWS_URI AWS_ACCCESS_KEY AWS_SECRET_KEY AWS_BUCKET; do
-    [ -n "${!v:-}" ] || fail "В .env пустая переменная: $v"
+  set -a
+  # shellcheck disable=SC1091
+  . ./.env
+  set +a
+  if [ -n "$MIRROR_REGISTRY" ]; then
+    MIRROR_APPLIED="no"
+  fi
+
+  local variable
+  for variable in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_HOST POSTGRES_PORT POSTGRES_NAME \
+    JWT_SECRET AWS_URI AWS_ACCCESS_KEY AWS_SECRET_KEY AWS_BUCKET; do
+    if [ -z "${!variable:-}" ]; then
+      error "В .env не задана переменная: $variable"
+      return 1
+    fi
   done
+
   case "$POSTGRES_HOST" in
     postgres|localhost|127.0.0.1)
-      echo "⚠ POSTGRES_HOST='$POSTGRES_HOST' — похоже на локальную/тестовую БД."
-      echo "  В prod ожидается адрес ВНЕШНЕГО PostgreSQL. Продолжаю, но проверьте .env." ;;
+      echo "⚠ POSTGRES_HOST='$POSTGRES_HOST' похож на локальную БД. Проверьте .env."
+      ;;
   esac
-  ok "Переменные на месте. Внешние базы скрипт не трогает: он управляет только контейнерами."
+}
 
-  say "Останавливаю и удаляю контейнеры/образы проекта '$PROJECT' (тома сохраняются)"
-  $DC -f "$COMPOSE_FILE" -p "$PROJECT" down --remove-orphans --rmi all || true
-  # легаси: контейнеры, запущенные раньше без "-p" (проект = имя папки)
-  LEGACY="$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]//g')"
-  if [ -n "$LEGACY" ] && [ "$LEGACY" != "$PROJECT" ]; then
-    $DC -f "$COMPOSE_FILE" -p "$LEGACY" down --remove-orphans --rmi all >/dev/null 2>&1 || true
-    $DC -f docker-compose-test.yml -p "$LEGACY" down --remove-orphans --rmi all >/dev/null 2>&1 || true
+mirror_image() {
+  local registry="${1#http://}"
+  registry="${registry#https://}"
+  registry="${registry%/}"
+  local image="${2#docker.io/}"
+
+  if [[ "$image" == "$registry/"* ]]; then
+    printf '%s' "$image"
+    return
   fi
-  if [ "$PURGE_CACHE" = "yes" ]; then
-    say "--purge-cache: удаляю и локальные тома проекта (redis-кэш; данных БД тут нет)"
-    $DC -f "$COMPOSE_FILE" -p "$PROJECT" down --volumes --remove-orphans || true
+
+  if [[ "$image" != */* ]]; then
+    image="library/$image"
   fi
-  ;;
+  printf '%s/%s' "$registry" "$image"
+}
 
-# ════════════════════════ DEV ══════════════════════════════════════
-dev|test)
-  COMPOSE_FILE="docker-compose-test.yml"
-  PROJECT="georeport-test"
-
-  say "DEV: полная очистка проекта '$PROJECT' ВМЕСТЕ с томами — тестовая БД будет создана заново"
-  $DC -f "$COMPOSE_FILE" -p "$PROJECT" down --volumes --remove-orphans --rmi all || true
-  # легаси: тестовый стек, запускавшийся раньше без "-p" (проект = имя папки)
-  LEGACY="$(basename "$PWD" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]//g')"
-  if [ -n "$LEGACY" ] && [ "$LEGACY" != "$PROJECT" ]; then
-    $DC -f "$COMPOSE_FILE" -p "$LEGACY" down --volumes --remove-orphans --rmi all >/dev/null 2>&1 || true
+apply_mirror() {
+  local registry="$1"
+  if [ -z "$registry" ]; then
+    error "Адрес зеркала пуст."
+    return 1
   fi
-  ;;
 
-*)
-  fail "Неизвестный режим '$MODE'. Использование: ./hard_start.sh [prod|dev] [--purge-cache]"
-  ;;
-esac
+  export PYTHON_IMAGE NODE_IMAGE NGINX_IMAGE POSTGRES_IMAGE
+  export REDIS_IMAGE MINIO_IMAGE MINIO_MC_IMAGE
 
-# ── общая часть: пересборка с нуля ──────────────────────────────────
-say "Чищу висячие образы и build-кэш"
-docker image prune -f >/dev/null || true
-docker builder prune -af >/dev/null || true
+  PYTHON_IMAGE="$(mirror_image "$registry" "${PYTHON_IMAGE:-python:3.10-slim-bookworm}")"
+  NODE_IMAGE="$(mirror_image "$registry" "${NODE_IMAGE:-node:22-alpine}")"
+  NGINX_IMAGE="$(mirror_image "$registry" "${NGINX_IMAGE:-nginx:1.27-alpine}")"
+  POSTGRES_IMAGE="$(mirror_image "$registry" "${POSTGRES_IMAGE:-postgres:15-alpine}")"
+  REDIS_IMAGE="$(mirror_image "$registry" "${REDIS_IMAGE:-redis:7-alpine}")"
+  MINIO_IMAGE="$(mirror_image "$registry" "${MINIO_IMAGE:-minio/minio:latest}")"
+  MINIO_MC_IMAGE="$(mirror_image "$registry" "${MINIO_MC_IMAGE:-minio/mc:latest}")"
+  MIRROR_REGISTRY="$registry"
+  MIRROR_APPLIED="yes"
+  ok "Для текущего запуска используется зеркало: ${registry#https://}"
+}
 
-say "Собираю всё заново (--no-cache, свежие базовые образы)"
-$DC -f "$COMPOSE_FILE" -p "$PROJECT" build --no-cache --pull
+is_registry_error() {
+  grep -Eiq \
+    'toomanyrequests|too many requests|TLS handshake timeout|i/o timeout|connection reset|connection refused|context deadline exceeded|dial tcp|no such host|temporary failure|failed to fetch anonymous token|unexpected EOF|unexpected status.*(429|500|502|503|504)|net/http.*timeout' \
+    "$1"
+}
 
-say "Запускаю"
-$DC -f "$COMPOSE_FILE" -p "$PROJECT" up -d
+run_with_registry_fallback() {
+  local title="$1"
+  shift
+  local log_file
+  local exit_code
+  log_file="$(mktemp)"
 
-say "Статус"
-$DC -f "$COMPOSE_FILE" -p "$PROJECT" ps
+  say "$title"
+  set +e
+  "$@" 2>&1 | tee "$log_file"
+  exit_code="${PIPESTATUS[0]}"
+  set -e
 
-if [ "$MODE" = "prod" ]; then
-  ok "PROD запущен. Внешние PostgreSQL/S3 из .env не затронуты."
-else
-  ok "DEV запущен на http://localhost — тестовая БД чистая, демо-данные засеяны (SEED_DEMO_DATA=true)."
-  echo "  MinIO-консоль: http://localhost:9001 (minioadmin/minioadmin), Postgres: localhost:5432 (georeport/georeport)"
+  if [ "$exit_code" -eq 0 ]; then
+    rm -f "$log_file"
+    return 0
+  fi
+
+  if grep -Eiq 'cannot connect to the docker daemon|failed to connect to the docker API|dockerDesktopLinuxEngine' "$log_file"; then
+    echo
+    error "Docker daemon недоступен. Запустите Docker Engine или Docker Desktop."
+    echo "Registry-зеркало эту ошибку не исправит."
+    rm -f "$log_file"
+    return "$exit_code"
+  fi
+
+  if [ "$MIRROR_APPLIED" = "no" ] && is_registry_error "$log_file"; then
+    echo
+    echo "⚠ Docker Hub недоступен или ограничил запросы."
+    echo "  Можно повторить через зеркало mirror.gcr.io."
+    echo "  Другое зеркало задаётся переменной DOCKER_MIRROR."
+
+    if [ -t 0 ]; then
+      printf "Повторить сейчас через mirror.gcr.io? [y/N] "
+      read -r answer
+      if [[ "$answer" =~ ^[YyДд]$ ]]; then
+        apply_mirror "mirror.gcr.io"
+        rm -f "$log_file"
+        say "Повтор: $title"
+        "$@"
+        return
+      fi
+    fi
+  fi
+
+  rm -f "$log_file"
+  return "$exit_code"
+}
+
+prepare_mode() {
+  local requested_mode="$1"
+  ensure_compose || return 1
+
+  if [ "$requested_mode" = "dev" ]; then
+    select_dev
+  else
+    select_prod || return 1
+  fi
+
+  if [ -n "$MIRROR_REGISTRY" ] && [ "$MIRROR_APPLIED" = "no" ]; then
+    apply_mirror "$MIRROR_REGISTRY" || return 1
+  fi
+}
+
+start_stack() {
+  run_with_registry_fallback \
+    "Загружаю готовые сервисные образы" \
+    compose pull --ignore-buildable || return 1
+
+  run_with_registry_fallback \
+    "Запускаю сервисы" \
+    compose up -d --remove-orphans || return 1
+
+  say "Состояние контейнеров"
+  compose ps
+
+  if [ "$MODE" = "dev" ]; then
+    ok "Тестовый стек запущен: http://localhost"
+    echo "  MinIO: http://localhost:9001 (minioadmin/minioadmin)"
+    echo "  PostgreSQL: localhost:5432 (georeport/georeport)"
+  else
+    ok "Production запущен. Внешние PostgreSQL и S3 не изменялись."
+  fi
+}
+
+full_deploy() {
+  local requested_mode="$1"
+  prepare_mode "$requested_mode" || return 1
+
+  say "Полностью очищаю Compose-проект '$PROJECT'"
+  compose down --volumes --remove-orphans --rmi local || return 1
+
+  run_with_registry_fallback \
+    "Собираю backend и frontend с нуля" \
+    compose build --no-cache --pull || return 1
+
+  start_stack
+}
+
+lite_deploy() {
+  local requested_mode="$1"
+  prepare_mode "$requested_mode" || return 1
+
+  run_with_registry_fallback \
+    "Обновляю backend и frontend с использованием build-кэша" \
+    compose build --pull || return 1
+
+  start_stack
+}
+
+clear_project() {
+  local requested_mode="$1"
+
+  if ! prepare_mode "$requested_mode"; then
+    if [ "$requested_mode" = "prod" ] && [ ! -f .env ]; then
+      echo "⚠ Production пропущен: отсутствует .env."
+      return 0
+    fi
+    return 1
+  fi
+
+  say "Очищаю Compose-проект '$PROJECT'"
+  compose down --volumes --remove-orphans --rmi local
+}
+
+clear_all() {
+  ensure_compose || return 1
+  clear_project dev || return 1
+  clear_project prod || return 1
+  ok "Контейнеры, сети, локальные образы и тома GEOREPORT удалены."
+}
+
+update_code() {
+  if [ ! -d .git ]; then
+    error "Каталог проекта не является Git-репозиторием."
+    return 1
+  fi
+
+  say "Обновляю код"
+  git pull --ff-only
+}
+
+show_project_info() {
+  local requested_mode="$1"
+
+  if ! prepare_mode "$requested_mode"; then
+    if [ "$requested_mode" = "prod" ] && [ ! -f .env ]; then
+      echo "⚠ Production пропущен: отсутствует .env."
+      return 0
+    fi
+    return 1
+  fi
+
+  say "$PROJECT: состояние"
+  compose ps --all
+  say "$PROJECT: последние 200 строк логов"
+  compose logs --tail=200
+}
+
+show_info() {
+  ensure_compose || return 1
+  show_project_info dev || return 1
+  show_project_info prod
+}
+
+run_command() {
+  case "$1" in
+    dev) full_deploy dev ;;
+    dev_lite) lite_deploy dev ;;
+    prod) full_deploy prod ;;
+    prod_lite) lite_deploy prod ;;
+    clear) clear_all ;;
+    update) update_code ;;
+    info) show_info ;;
+    exit) return 0 ;;
+    *)
+      error "Неизвестная команда: $1"
+      show_menu
+      return 1
+      ;;
+  esac
+}
+
+if [ "$#" -gt 1 ]; then
+  error "Укажите только одну команду."
+  show_menu
+  exit 2
 fi
+
+if [ "$#" -eq 1 ]; then
+  run_command "$1"
+  exit $?
+fi
+
+while true; do
+  show_menu
+  printf '\nКоманда: '
+  if ! read -r command; then
+    echo
+    exit 0
+  fi
+  command="${command//$'\r'/}"
+
+  if [ "$command" = "exit" ]; then
+    exit 0
+  fi
+
+  if ! run_command "$command"; then
+    echo
+    echo "Команда завершилась с ошибкой."
+  fi
+done

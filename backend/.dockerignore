@@ -1,6 +1,42 @@
-.venv
-tests
-.git
-.cache
-**/.idea
-**/__pycache__
+# Python environments and caches
+.venv/
+venv/
+env/
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+.hypothesis/
+.ipynb_checkpoints/
+.tox/
+.nox/
+.cache/
+.uv-cache/
+.dmypy.json
+htmlcov/
+.coverage
+.coverage.*
+
+# Build and package caches
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# Local and test artefacts
+tests/
+test-results/
+*.log
+.env
+.env.*
+
+# VCS and IDE metadata
+.git/
+.gitignore
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
